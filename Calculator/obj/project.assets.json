@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\App\\Calculator\\Calculator\\Calculator\\Calculator.csproj",
+      "projectUniqueName": "E:\\App\\Calculator\\Calculator\\Calculator.csproj",
       "projectName": "Calculator",
-      "projectPath": "E:\\App\\Calculator\\Calculator\\Calculator\\Calculator.csproj",
+      "projectPath": "E:\\App\\Calculator\\Calculator\\Calculator.csproj",
       "packagesPath": "C:\\Users\\HOAI TRAN\\.nuget\\packages\\",
-      "outputPath": "E:\\App\\Calculator\\Calculator\\Calculator\\obj\\",
+      "outputPath": "E:\\App\\Calculator\\Calculator\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

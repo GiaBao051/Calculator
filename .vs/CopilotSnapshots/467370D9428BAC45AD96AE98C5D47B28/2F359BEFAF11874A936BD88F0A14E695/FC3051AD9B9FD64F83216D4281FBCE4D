@@ -1,0 +1,38 @@
+﻿using System;
+using System.Windows.Input;
+
+namespace Calculator.Commands;
+
+// RelayCommand là lớp giúp bọc một hàm thông thường (Action)
+// thành dạng ICommand để XAML có thể binding vào.
+//
+// Cách dùng trong ViewModel:
+//   ButtonCommand = new RelayCommand(DoSomething);
+//   ButtonCommand = new RelayCommand(DoSomething, () => canExecute);
+public class RelayCommand : ICommand
+{
+    // Hàm thực thi khi Command được gọi.
+    private readonly Action _execute;
+
+    // Hàm kiểm tra Command có được phép chạy không (tùy chọn).
+    private readonly Func<bool>? _canExecute;
+
+    public RelayCommand(Action execute, Func<bool>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    // WPF tự gọi CanExecute để quyết định có disable nút không.
+    public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
+
+    // WPF gọi Execute khi người dùng bấm nút.
+    public void Execute(object? parameter) => _execute();
+
+    // Sự kiện để báo WPF kiểm tra lại CanExecute khi trạng thái thay đổi.
+    public event EventHandler? CanExecuteChanged
+    {
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
+    }
+}

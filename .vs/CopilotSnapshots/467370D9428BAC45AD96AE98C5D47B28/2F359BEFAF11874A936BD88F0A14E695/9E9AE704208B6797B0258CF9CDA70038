@@ -1,0 +1,339 @@
+﻿using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace Calculator;
+
+public partial class MainWindow : Window
+{
+    // ====== Trạng thái tính toán ======
+
+    // Toán hạng thứ nhất (ví dụ trong phép 12 + 3 thì là 12).
+    private decimal? _firstOperand;
+
+    // Toán tử đang chọn (+, -, *, /).
+    private string? _currentOperator;
+
+    // true  => đang chờ nhập toán hạng mới (thường sau khi bấm toán tử).
+    // false => đang nhập tiếp số hiện tại.
+    private bool _isWaitingForNewInput = true;
+
+    // Đánh dấu màn hình hiện đang hiển thị kết quả sau khi bấm '='.
+    private bool _isShowingResult;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        ResetCalculator();
+    }
+
+    // ====== Điều hướng thao tác từ UI ======
+
+    // Điểm nhận sự kiện click chung cho tất cả phím.
+    // Nhiệm vụ của hàm này chỉ là phân loại hành động và gọi hàm xử lý tương ứng.
+    private void OnCalculatorButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string action)
+        {
+            return;
+        }
+
+        if (action.Length == 1 && char.IsDigit(action[0]))
+        {
+            AppendNumber(action);
+            return;
+        }
+
+        switch (action)
+        {
+            case ".":
+                AppendDecimalPoint();
+                break;
+            case "+":
+            case "-":
+            case "*":
+            case "/":
+                SetOperator(action);
+                break;
+            case "=":
+                CalculateAndShowResult();
+                break;
+            case "C":
+                ResetCalculator();
+                break;
+            case "CE":
+                ClearEntry();
+                break;
+            case "Backspace":
+                HandleBackspace();
+                break;
+            case "ToggleSign":
+                ToggleSign();
+                break;
+        }
+    }
+
+    // ====== Xử lý nhập liệu ======
+
+    // Thêm chữ số vào ô kết quả.
+    // Nếu đang chờ nhập mới thì thay nội dung cũ bằng chữ số vừa bấm.
+    private void AppendNumber(string numberText)
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+        }
+
+        // Nếu vừa có kết quả từ '=', và chưa chọn toán tử mới,
+        // lần nhập số tiếp theo sẽ bắt đầu phép tính mới.
+        if (_isShowingResult && _currentOperator is null)
+        {
+            ExpressionTextBlock.Text = string.Empty;
+            _firstOperand = null;
+            _isShowingResult = false;
+        }
+
+        if (_isWaitingForNewInput || ResultTextBlock.Text == "0")
+        {
+            ResultTextBlock.Text = numberText;
+        }
+        else
+        {
+            ResultTextBlock.Text += numberText;
+        }
+
+        _isWaitingForNewInput = false;
+    }
+
+    // Thêm dấu thập phân nếu số hiện tại chưa có '.'.
+    // Nếu đang chờ nhập mới thì khởi tạo thành "0.".
+    private void AppendDecimalPoint()
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+        }
+
+        if (_isWaitingForNewInput)
+        {
+            ResultTextBlock.Text = "0.";
+            _isWaitingForNewInput = false;
+            _isShowingResult = false;
+            return;
+        }
+
+        if (!ResultTextBlock.Text.Contains('.'))
+        {
+            ResultTextBlock.Text += ".";
+        }
+    }
+
+    // ====== Xử lý toán tử và tính kết quả ======
+
+    // Lưu toán tử và chuẩn bị nhập toán hạng tiếp theo.
+    // Hỗ trợ tính chuỗi: 2 + 3 + 4 (bấm '+' lần 2 sẽ tính 2 + 3 trước).
+    private void SetOperator(string selectedOperator)
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+            return;
+        }
+
+        try
+        {
+            decimal currentValue = GetCurrentDisplayValue();
+
+            if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
+            {
+                decimal chainedResult = CalculateResult(_firstOperand.Value, currentValue, _currentOperator);
+                _firstOperand = chainedResult;
+                ResultTextBlock.Text = FormatNumber(chainedResult);
+            }
+            else
+            {
+                _firstOperand = currentValue;
+            }
+
+            _currentOperator = selectedOperator;
+            _isWaitingForNewInput = true;
+            _isShowingResult = false;
+            ExpressionTextBlock.Text = $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(selectedOperator)}";
+        }
+        catch (DivideByZeroException)
+        {
+            ShowError("Không thể chia cho 0");
+        }
+        catch
+        {
+            ShowError("Lỗi phép tính");
+        }
+    }
+
+    // Thực hiện phép tính khi bấm '=' và hiển thị cả biểu thức lẫn kết quả.
+    private void CalculateAndShowResult()
+    {
+        if (_firstOperand is null || _currentOperator is null || _isWaitingForNewInput || IsDisplayError())
+        {
+            return;
+        }
+
+        decimal secondOperand = GetCurrentDisplayValue();
+
+        try
+        {
+            decimal result = CalculateResult(_firstOperand.Value, secondOperand, _currentOperator);
+            ExpressionTextBlock.Text =
+                $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(_currentOperator)} {FormatNumber(secondOperand)} =:";
+
+            ResultTextBlock.Text = FormatNumber(result);
+            _firstOperand = result;
+            _currentOperator = null;
+            _isWaitingForNewInput = true;
+            _isShowingResult = true;
+        }
+        catch (DivideByZeroException)
+        {
+            ShowError("Không thể chia cho 0");
+        }
+        catch
+        {
+            ShowError("Lỗi phép tính");
+        }
+    }
+
+    // Hàm tính toán lõi, độc lập với UI.
+    private decimal CalculateResult(decimal leftOperand, decimal rightOperand, string mathOperator)
+    {
+        return mathOperator switch
+        {
+            "+" => leftOperand + rightOperand,
+            "-" => leftOperand - rightOperand,
+            "*" => leftOperand * rightOperand,
+            "/" when rightOperand == 0 => throw new DivideByZeroException(),
+            "/" => leftOperand / rightOperand,
+            _ => throw new InvalidOperationException("Toán tử không hợp lệ")
+        };
+    }
+
+    // ====== Hàm tiện ích đọc/định dạng dữ liệu ======
+
+    // Đọc số đang hiển thị trên màn hình theo InvariantCulture.
+    private decimal GetCurrentDisplayValue()
+    {
+        if (!decimal.TryParse(ResultTextBlock.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value))
+        {
+            throw new FormatException("Giá trị hiển thị không hợp lệ");
+        }
+
+        return value;
+    }
+
+    // Đổi ký hiệu toán tử nội bộ thành ký hiệu đẹp hơn để hiển thị trên UI.
+    private static string GetOperatorSymbol(string mathOperator)
+    {
+        return mathOperator switch
+        {
+            "/" => "÷",
+            "*" => "×",
+            _ => mathOperator
+        };
+    }
+
+    // Chuẩn hóa số hiển thị bằng InvariantCulture (dấu thập phân là '.').
+    private static string FormatNumber(decimal number)
+    {
+        return number.ToString(CultureInfo.InvariantCulture);
+    }
+
+    // Kiểm tra màn hình đang hiển thị lỗi (không parse được về số).
+    private bool IsDisplayError()
+    {
+        return !decimal.TryParse(ResultTextBlock.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
+    }
+
+    // ====== Xử lý thao tác hệ thống (C, CE, Backspace, lỗi) ======
+
+    // C: reset toàn bộ trạng thái máy tính.
+    private void ResetCalculator()
+    {
+        _firstOperand = null;
+        _currentOperator = null;
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+
+        ExpressionTextBlock.Text = string.Empty;
+        ResultTextBlock.Text = "0";
+    }
+
+    // CE: chỉ xóa số đang nhập, giữ nguyên toán hạng/toán tử đã lưu.
+    private void ClearEntry()
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+            return;
+        }
+
+        ResultTextBlock.Text = "0";
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+    }
+
+    // Xóa 1 ký tự cuối của số đang nhập.
+    private void HandleBackspace()
+    {
+        if (_isWaitingForNewInput || IsDisplayError())
+        {
+            return;
+        }
+
+        if (ResultTextBlock.Text.Length <= 1)
+        {
+            ResultTextBlock.Text = "0";
+            _isWaitingForNewInput = true;
+            return;
+        }
+
+        ResultTextBlock.Text = ResultTextBlock.Text[..^1];
+
+        if (ResultTextBlock.Text == "-" || ResultTextBlock.Text.Length == 0)
+        {
+            ResultTextBlock.Text = "0";
+            _isWaitingForNewInput = true;
+        }
+    }
+
+    // Đổi dấu số hiện tại (+/-).
+    private void ToggleSign()
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+            return;
+        }
+
+        decimal currentValue = GetCurrentDisplayValue();
+
+        if (currentValue == 0)
+        {
+            return;
+        }
+
+        ResultTextBlock.Text = FormatNumber(currentValue * -1);
+        _isWaitingForNewInput = false;
+    }
+
+    // Hiển thị thông báo lỗi và đưa app về trạng thái an toàn.
+    private void ShowError(string errorMessage)
+    {
+        ExpressionTextBlock.Text = string.Empty;
+        ResultTextBlock.Text = errorMessage;
+
+        _firstOperand = null;
+        _currentOperator = null;
+        _isWaitingForNewInput = true;
+        _isShowingResult = true;
+    }
+}

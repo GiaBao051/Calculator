@@ -1,0 +1,239 @@
+using System;
+using System.Globalization;
+
+namespace Calculator.Services;
+
+// CalculatorService ch?a toàn b? logic nghi?p v? c?a máy tính.
+// L?p này hoàn toàn ??c l?p v?i UI — không tham chi?u b?t k? th? gì t? WPF.
+// ?i?u ?ó giúp d? dàng vi?t unit test sau này.
+public class CalculatorService
+{
+    // ====== Tr?ng thái n?i b? ======
+
+    // Toán h?ng th? nh?t ?ang ???c l?u (ví d?: 12 trong phép 12 + 3).
+    private decimal? _firstOperand;
+
+    // Toán t? ?ang ch?n: +, -, *, /
+    private string? _currentOperator;
+
+    // true  => ?ang ch? ng??i dùng nh?p toán h?ng m?i (sau khi b?m toán t?).
+    // false => ?ang nh?p ti?p s? hi?n t?i.
+    private bool _isWaitingForNewInput = true;
+
+    // true => màn hình v?a hi?n th? k?t qu? sau khi b?m '='.
+    private bool _isShowingResult;
+
+    // ====== D? li?u hi?n th? ======
+
+    // Chu?i s? ?ang hi?n th? ? dòng k?t qu? (ví d?: "123", "3.14", "Không th? chia cho 0").
+    public string DisplayText { get; private set; } = "0";
+
+    // Chu?i bi?u th?c ?ang hi?n th? ? dòng trên (ví d?: "12 +", "12 + 3 =").
+    public string ExpressionText { get; private set; } = string.Empty;
+
+    // ====== Nh?p li?u ======
+
+    // Thêm m?t ch? s? vào s? ?ang nh?p.
+    // N?u ?ang ch? nh?p m?i thì thay toàn b? s? c? b?ng ch? s? v?a nh?p.
+    public void InputNumber(string digit)
+    {
+        if (IsError()) Reset();
+
+        // V?a b?m '=' và ch?a ch?n toán t? m?i => b?t ??u phép tính hoàn toàn m?i.
+        if (_isShowingResult && _currentOperator is null)
+        {
+            ExpressionText = string.Empty;
+            _firstOperand = null;
+            _isShowingResult = false;
+        }
+
+        if (_isWaitingForNewInput || DisplayText == "0")
+            DisplayText = digit;
+        else
+            DisplayText += digit;
+
+        _isWaitingForNewInput = false;
+    }
+
+    // Thêm d?u th?p phân n?u s? hi?n t?i ch?a có '.'.
+    // N?u ?ang ch? nh?p m?i thì kh?i t?o thành "0.".
+    public void InputDecimalPoint()
+    {
+        if (IsError()) Reset();
+
+        if (_isWaitingForNewInput)
+        {
+            DisplayText = "0.";
+            _isWaitingForNewInput = false;
+            _isShowingResult = false;
+            return;
+        }
+
+        if (!DisplayText.Contains('.'))
+            DisplayText += ".";
+    }
+
+    // ====== Toán t? và tính k?t qu? ======
+
+    // L?u toán t? và chu?n b? nh?n toán h?ng ti?p theo.
+    // H? tr? phép tính chu?i: 2 + 3 + 4 ? b?m '+' l?n 2 s? tính 2+3=5 tr??c.
+    public void InputOperator(string op)
+    {
+        if (IsError()) { Reset(); return; }
+
+        try
+        {
+            decimal current = ParseDisplay();
+
+            // Phép tính chu?i: ?ã có toán h?ng 1 và toán t?, ng??i dùng nh?p thêm m?t toán t? m?i.
+            if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
+            {
+                decimal chainedResult = Compute(_firstOperand.Value, current, _currentOperator);
+                _firstOperand = chainedResult;
+                DisplayText = Format(chainedResult);
+            }
+            else
+            {
+                _firstOperand = current;
+            }
+
+            _currentOperator = op;
+            _isWaitingForNewInput = true;
+            _isShowingResult = false;
+            ExpressionText = $"{Format(_firstOperand.Value)} {ToSymbol(op)}";
+        }
+        catch (DivideByZeroException) { SetError("Không th? chia cho 0"); }
+        catch { SetError("L?i phép tính"); }
+    }
+
+    // Th?c hi?n phép tính khi b?m '=' và c?p nh?t c? bi?u th?c l?n k?t qu?.
+    public void Calculate()
+    {
+        if (_firstOperand is null || _currentOperator is null || _isWaitingForNewInput || IsError())
+            return;
+
+        decimal second = ParseDisplay();
+
+        try
+        {
+            decimal result = Compute(_firstOperand.Value, second, _currentOperator);
+            ExpressionText = $"{Format(_firstOperand.Value)} {ToSymbol(_currentOperator)} {Format(second)} =";
+            DisplayText = Format(result);
+
+            _firstOperand = result;
+            _currentOperator = null;
+            _isWaitingForNewInput = true;
+            _isShowingResult = true;
+        }
+        catch (DivideByZeroException) { SetError("Không th? chia cho 0"); }
+        catch { SetError("L?i phép tính"); }
+    }
+
+    // ====== Thao tác h? th?ng ======
+
+    // C: reset toàn b? tr?ng thái máy tính v? ban ??u.
+    public void Reset()
+    {
+        _firstOperand = null;
+        _currentOperator = null;
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+        DisplayText = "0";
+        ExpressionText = string.Empty;
+    }
+
+    // CE: ch? xóa s? ?ang nh?p, gi? nguyên toán h?ng và toán t? ?ã l?u.
+    public void ClearEntry()
+    {
+        if (IsError()) { Reset(); return; }
+
+        DisplayText = "0";
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+    }
+
+    // Xóa 1 ký t? cu?i c?a s? ?ang nh?p.
+    public void Backspace()
+    {
+        if (_isWaitingForNewInput || IsError()) return;
+
+        if (DisplayText.Length <= 1)
+        {
+            DisplayText = "0";
+            _isWaitingForNewInput = true;
+            return;
+        }
+
+        DisplayText = DisplayText[..^1];
+
+        if (DisplayText == "-" || DisplayText.Length == 0)
+        {
+            DisplayText = "0";
+            _isWaitingForNewInput = true;
+        }
+    }
+
+    // ??i d?u s? hi?n t?i (d??ng ? âm).
+    public void ToggleSign()
+    {
+        if (IsError()) { Reset(); return; }
+
+        decimal current = ParseDisplay();
+        if (current == 0) return;
+
+        DisplayText = Format(current * -1);
+        _isWaitingForNewInput = false;
+    }
+
+    // ====== Hàm n?i b? ======
+
+    // Hàm tính toán lõi: nh?n 2 s? và 1 toán t?, tr? v? k?t qu?.
+    private static decimal Compute(decimal left, decimal right, string op)
+    {
+        return op switch
+        {
+            "+" => left + right,
+            "-" => left - right,
+            "*" => left * right,
+            "/" when right == 0 => throw new DivideByZeroException(),
+            "/" => left / right,
+            _ => throw new InvalidOperationException("Toán t? không h?p l?")
+        };
+    }
+
+    // ??c s? t? DisplayText, dùng InvariantCulture ?? th?ng nh?t d?u '.'.
+    private decimal ParseDisplay()
+    {
+        if (!decimal.TryParse(DisplayText, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value))
+            throw new FormatException("Giá tr? hi?n th? không h?p l?");
+
+        return value;
+    }
+
+    // ??nh d?ng s? thành chu?i ?? hi?n th?.
+    private static string Format(decimal number) =>
+        number.ToString(CultureInfo.InvariantCulture);
+
+    // ??i ký hi?u toán t? n?i b? (*, /) thành ký hi?u ??p (×, ÷) ?? hi?n th?.
+    private static string ToSymbol(string op) => op switch
+    {
+        "/" => "÷",
+        "*" => "×",
+        _ => op
+    };
+
+    // Ki?m tra DisplayText có ?ang là thông báo l?i không.
+    private bool IsError() =>
+        !decimal.TryParse(DisplayText, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
+
+    // ??a app v? tr?ng thái l?i an toàn.
+    private void SetError(string message)
+    {
+        ExpressionText = string.Empty;
+        DisplayText = message;
+        _firstOperand = null;
+        _currentOperator = null;
+        _isWaitingForNewInput = true;
+        _isShowingResult = true;
+    }
+}

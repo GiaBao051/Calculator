@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "E:\\App\\Calculator\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|e:\\app\\calculator\\calculator\\viewmodels\\calculatorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|solutionrelative:calculator\\viewmodels\\calculatorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|e:\\app\\calculator\\calculator\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|solutionrelative:calculator\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -21,10 +25,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|e:\\app\\calculator\\calculator\\services\\calculatorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|solutionrelative:calculator\\services\\calculatorservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|e:\\app\\calculator\\calculator\\viewmodels\\calculatorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|solutionrelative:calculator\\viewmodels\\calculatorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,7 +34,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -42,46 +42,46 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 0,
               "Title": "CalculatorViewModel.cs",
               "DocumentMoniker": "E:\\App\\Calculator\\Calculator\\ViewModels\\CalculatorViewModel.cs",
               "RelativeDocumentMoniker": "Calculator\\ViewModels\\CalculatorViewModel.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\ViewModels\\CalculatorViewModel.cs",
               "RelativeToolTip": "Calculator\\ViewModels\\CalculatorViewModel.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAJgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAH4AAAAAAAAAAAAiwJgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-11T16:56:06.615Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "CalculatorService.cs",
               "DocumentMoniker": "E:\\App\\Calculator\\Calculator\\Services\\CalculatorService.cs",
               "RelativeDocumentMoniker": "Calculator\\Services\\CalculatorService.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\Services\\CalculatorService.cs",
               "RelativeToolTip": "Calculator\\Services\\CalculatorService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAO8AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAOsAAAAAAAAAAEBVwO8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-11T16:55:40.719Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "RelayCommand.cs",
               "DocumentMoniker": "E:\\App\\Calculator\\Calculator\\Commands\\RelayCommand.cs",
               "RelativeDocumentMoniker": "Calculator\\Commands\\RelayCommand.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\Commands\\RelayCommand.cs",
               "RelativeToolTip": "Calculator\\Commands\\RelayCommand.cs",
-              "ViewState": "AgIAAEQAAAAAAAAAAEBVwEgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAEcAAAAAAAAAAABBwEgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-11T16:54:53.077Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "README.md",
               "DocumentMoniker": "E:\\App\\Calculator\\README.md",
               "RelativeDocumentMoniker": "README.md",
@@ -93,28 +93,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "MainWindow.xaml.cs",
               "DocumentMoniker": "E:\\App\\Calculator\\Calculator\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "Calculator\\MainWindow.xaml.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\MainWindow.xaml.cs",
               "RelativeToolTip": "Calculator\\MainWindow.xaml.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-10T09:22:54.007Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-10T09:22:54.007Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "E:\\App\\Calculator\\Calculator\\MainWindow.xaml",
               "RelativeDocumentMoniker": "Calculator\\MainWindow.xaml",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\MainWindow.xaml",
               "RelativeToolTip": "Calculator\\MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-03-10T09:20:37.766Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-10T09:20:37.766Z"
             }
           ]
         }

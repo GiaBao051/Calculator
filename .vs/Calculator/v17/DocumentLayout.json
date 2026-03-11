@@ -48,7 +48,7 @@
               "RelativeDocumentMoniker": "Calculator\\ViewModels\\CalculatorViewModel.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\ViewModels\\CalculatorViewModel.cs",
               "RelativeToolTip": "Calculator\\ViewModels\\CalculatorViewModel.cs",
-              "ViewState": "AgIAAIYAAAAAAAAAAAAowJgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAACQAAAAAAAAAAAAowJgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-11T16:56:06.615Z",
               "EditorCaption": ""
@@ -61,7 +61,7 @@
               "RelativeDocumentMoniker": "Calculator\\Services\\CalculatorService.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\Services\\CalculatorService.cs",
               "RelativeToolTip": "Calculator\\Services\\CalculatorService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAO8AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAOsAAAAAAAAAAEBVwO8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-11T16:55:40.719Z",
               "EditorCaption": ""
@@ -74,7 +74,7 @@
               "RelativeDocumentMoniker": "Calculator\\Commands\\RelayCommand.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\Commands\\RelayCommand.cs",
               "RelativeToolTip": "Calculator\\Commands\\RelayCommand.cs",
-              "ViewState": "AgIAAEQAAAAAAAAAAEBVwEgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAEYAAAAAAAAAAIBJwEgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-11T16:54:53.077Z",
               "EditorCaption": ""
@@ -101,8 +101,7 @@
               "RelativeToolTip": "Calculator\\MainWindow.xaml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-10T09:22:54.007Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-10T09:22:54.007Z"
             },
             {
               "$type": "Document",
@@ -113,8 +112,7 @@
               "ToolTip": "E:\\App\\Calculator\\Calculator\\MainWindow.xaml",
               "RelativeToolTip": "Calculator\\MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-03-10T09:20:37.766Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-10T09:20:37.766Z"
             }
           ]
         }

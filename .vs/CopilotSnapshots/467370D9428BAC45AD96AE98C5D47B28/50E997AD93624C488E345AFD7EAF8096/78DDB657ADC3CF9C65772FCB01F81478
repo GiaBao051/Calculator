@@ -1,0 +1,72 @@
+﻿using System;
+using System.Windows.Input;
+
+namespace Calculator.Commands;
+
+// RelayCommand b?c m?t Action thành ICommand.
+// Dùng khi nút b?m KHÔNG c?n truy?n tham s? vào hàm x? lý.
+//
+// Ví d?:
+//   EqualCommand = new RelayCommand(OnEqualPressed);
+public class RelayCommand : ICommand
+{
+    private readonly Action _execute;
+    private readonly Func<bool>? _canExecute;
+
+    public RelayCommand(Action execute, Func<bool>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    // WPF g?i hàm này ?? quy?t ??nh có disable nút không.
+    public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
+
+    // WPF g?i hàm này khi ng??i dùng b?m nút.
+    public void Execute(object? parameter) => _execute();
+
+    // S? ki?n ?? báo WPF ki?m tra l?i CanExecute.
+    public event EventHandler? CanExecuteChanged
+    {
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
+    }
+}
+
+// RelayCommand<T> b?c m?t Action<T> thành ICommand.
+// Dùng khi nút b?m C?N truy?n tham s? qua CommandParameter trong XAML.
+//
+// Ví d?:
+//   NumberCommand = new RelayCommand<string>(OnNumberPressed);
+//   XAML: CommandParameter="7"
+public class RelayCommand<T> : ICommand
+{
+    private readonly Action<T> _execute;
+    private readonly Func<T, bool>? _canExecute;
+
+    public RelayCommand(Action<T> execute, Func<T, bool>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    public bool CanExecute(object? parameter)
+    {
+        if (parameter is T value)
+            return _canExecute?.Invoke(value) ?? true;
+
+        return true;
+    }
+
+    public void Execute(object? parameter)
+    {
+        if (parameter is T value)
+            _execute(value);
+    }
+
+    public event EventHandler? CanExecuteChanged
+    {
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
+    }
+}

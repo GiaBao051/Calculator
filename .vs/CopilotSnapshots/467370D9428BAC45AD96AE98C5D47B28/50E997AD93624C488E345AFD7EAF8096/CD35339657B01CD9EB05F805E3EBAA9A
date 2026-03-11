@@ -1,0 +1,152 @@
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using Calculator.Commands;
+using Calculator.Services;
+
+namespace Calculator.ViewModels;
+
+// CalculatorViewModel là cầu nối giữa View (XAML) và Service (logic).
+//
+// Quy tắc MVVM:
+//   - View KHÔNG biết ViewModel làm gì bên trong.
+//   - ViewModel KHÔNG biết View trông như thế nào.
+//   - Hai bên nói chuyện với nhau qua DataBinding và Command.
+public class CalculatorViewModel : INotifyPropertyChanged
+{
+    // ====== Service ======
+
+    // CalculatorService xử lý toàn bộ logic tính toán.
+    // ViewModel chỉ gọi vào Service và cập nhật lại property để UI tự cập nhật.
+    private readonly CalculatorService _service = new();
+
+    // ====== Properties binding ra View ======
+
+    // Dòng kết quả lớn (số đang nhập hoặc kết quả phép tính).
+    private string _displayText = "0";
+    public string DisplayText
+    {
+        get => _displayText;
+        private set { _displayText = value; OnPropertyChanged(); }
+    }
+
+    // Dòng biểu thức nhỏ phía trên (ví dụ: "12 +" hoặc "12 + 3 =").
+    private string _expressionText = string.Empty;
+    public string ExpressionText
+    {
+        get => _expressionText;
+        private set { _expressionText = value; OnPropertyChanged(); }
+    }
+
+    // ====== Commands gắn vào từng nút bấm ======
+
+    // Nút số (0–9): nhận tham số là chuỗi chữ số.
+    public ICommand NumberCommand { get; }
+
+    // Nút dấu chấm thập phân '.'.
+    public ICommand DecimalCommand { get; }
+
+    // Nút toán tử (+, -, *, /): nhận tham số là ký hiệu toán tử.
+    public ICommand OperatorCommand { get; }
+
+    // Nút '=' để tính kết quả.
+    public ICommand EqualCommand { get; }
+
+    // Nút C: reset toàn bộ.
+    public ICommand ResetCommand { get; }
+
+    // Nút CE: chỉ xóa số đang nhập.
+    public ICommand ClearEntryCommand { get; }
+
+    // Nút ⌫: xóa 1 ký tự cuối.
+    public ICommand BackspaceCommand { get; }
+
+    // Nút +/−: đổi dấu số hiện tại.
+    public ICommand ToggleSignCommand { get; }
+
+    public CalculatorViewModel()
+    {
+        // Mỗi Command nhận một Action (hàm sẽ chạy khi nút được bấm).
+        // RelayCommand<string> cho phép nhận tham số từ XAML qua CommandParameter.
+        NumberCommand = new RelayCommand<string>(OnNumberPressed);
+        DecimalCommand = new RelayCommand(OnDecimalPressed);
+        OperatorCommand = new RelayCommand<string>(OnOperatorPressed);
+        EqualCommand = new RelayCommand(OnEqualPressed);
+        ResetCommand = new RelayCommand(OnResetPressed);
+        ClearEntryCommand = new RelayCommand(OnClearEntryPressed);
+        BackspaceCommand = new RelayCommand(OnBackspacePressed);
+        ToggleSignCommand = new RelayCommand(OnToggleSignPressed);
+    }
+
+    // ====== Xử lý từng nút bấm ======
+    // Mỗi hàm chỉ làm 2 việc:
+    //   1. Gọi Service xử lý logic.
+    //   2. Cập nhật lại property để View tự cập nhật qua DataBinding.
+
+    private void OnNumberPressed(string digit)
+    {
+        _service.InputNumber(digit);
+        SyncDisplay();
+    }
+
+    private void OnDecimalPressed()
+    {
+        _service.InputDecimalPoint();
+        SyncDisplay();
+    }
+
+    private void OnOperatorPressed(string op)
+    {
+        _service.InputOperator(op);
+        SyncDisplay();
+    }
+
+    private void OnEqualPressed()
+    {
+        _service.Calculate();
+        SyncDisplay();
+    }
+
+    private void OnResetPressed()
+    {
+        _service.Reset();
+        SyncDisplay();
+    }
+
+    private void OnClearEntryPressed()
+    {
+        _service.ClearEntry();
+        SyncDisplay();
+    }
+
+    private void OnBackspacePressed()
+    {
+        _service.Backspace();
+        SyncDisplay();
+    }
+
+    private void OnToggleSignPressed()
+    {
+        _service.ToggleSign();
+        SyncDisplay();
+    }
+
+    // Đồng bộ dữ liệu từ Service vào property của ViewModel.
+    // View sẽ tự cập nhật vì INotifyPropertyChanged.
+    private void SyncDisplay()
+    {
+        DisplayText = _service.DisplayText;
+        ExpressionText = _service.ExpressionText;
+    }
+
+    // ====== INotifyPropertyChanged ======
+    // Cơ chế thông báo cho View biết khi property thay đổi.
+    // [CallerMemberName] tự điền tên property đang gọi, không cần viết thủ công.
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}

@@ -1,0 +1,16 @@
+﻿using System.Windows;
+using Calculator.ViewModels;
+
+namespace Calculator;
+
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();
+
+        // Gán ViewModel làm DataContext để toàn bộ Binding trong XAML
+        // tự tìm đúng property và command trong CalculatorViewModel.
+        DataContext = new CalculatorViewModel();
+    }
+}

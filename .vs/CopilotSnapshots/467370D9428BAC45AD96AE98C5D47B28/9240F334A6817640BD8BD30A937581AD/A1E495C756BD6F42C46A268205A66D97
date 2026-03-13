@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Calculator.Commands;
@@ -6,21 +6,23 @@ using Calculator.Services;
 
 namespace Calculator.ViewModels;
 
-// CalculatorViewModel la cau noi giua View (XAML) va Service (logic).
+// CalculatorViewModel là c?u n?i gi?a View (XAML) và Service (logic).
 //
-// Quy tac MVVM:
-// - View KHONG biet ben trong ViewModel xu ly the nao.
-// - ViewModel KHONG biet giao dien dang hien thi ra sao.
-// - Hai ben ket noi voi nhau qua DataBinding va Command.
+// Quy t?c MVVM:
+//   - View KHÔNG bi?t ViewModel làm gì bên trong.
+//   - ViewModel KHÔNG bi?t View trông nh? th? nào.
+//   - Hai bên nói chuy?n v?i nhau qua DataBinding và Command.
 public class CalculatorViewModel : INotifyPropertyChanged
 {
     // ====== Service ======
-    // Service chua logic tinh toan, ViewModel chi goi va dong bo du lieu hien thi.
+
+    // CalculatorService x? lý toàn b? logic tính toán.
+    // ViewModel ch? g?i vào Service và c?p nh?t l?i property ?? UI t? c?p nh?t.
     private readonly CalculatorService _service = new();
 
-    // ====== Properties bind ra View ======
+    // ====== Properties binding ra View ======
 
-    // Dong ket qua lon: so dang nhap hoac ket qua sau khi tinh.
+    // Dòng k?t qu? l?n (s? ?ang nh?p ho?c k?t qu? phép tính).
     private string _displayText = "0";
     public string DisplayText
     {
@@ -28,7 +30,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
         private set { _displayText = value; OnPropertyChanged(); }
     }
 
-    // Dong bieu thuc nho phia tren: vi du "12 +" hoac "12 + 3 =".
+    // Dòng bi?u th?c nh? phía trên (ví d?: "12 +" ho?c "12 + 3 =").
     private string _expressionText = string.Empty;
     public string ExpressionText
     {
@@ -36,19 +38,36 @@ public class CalculatorViewModel : INotifyPropertyChanged
         private set { _expressionText = value; OnPropertyChanged(); }
     }
 
-    // ====== Commands gan cho tung nut ======
+    // ====== Commands g?n vào t?ng nút b?m ======
+
+    // Nút s? (0–9): nh?n tham s? là chu?i ch? s?.
     public ICommand NumberCommand { get; }
+
+    // Nút d?u ch?m th?p phân '.'.
     public ICommand DecimalCommand { get; }
+
+    // Nút toán t? (+, -, *, /): nh?n tham s? là ký hi?u toán t?.
     public ICommand OperatorCommand { get; }
+
+    // Nút '=' ?? tính k?t qu?.
     public ICommand EqualCommand { get; }
+
+    // Nút C: reset toàn b?.
     public ICommand ResetCommand { get; }
+
+    // Nút CE: ch? xóa s? ?ang nh?p.
     public ICommand ClearEntryCommand { get; }
+
+    // Nút ?: xóa 1 ký t? cu?i.
     public ICommand BackspaceCommand { get; }
+
+    // Nút +/?: ??i d?u s? hi?n t?i.
     public ICommand ToggleSignCommand { get; }
 
     public CalculatorViewModel()
     {
-        // Moi command duoc anh xa toi 1 ham xu ly tuong ung.
+        // M?i Command nh?n m?t Action (hàm s? ch?y khi nút ???c b?m).
+        // RelayCommand<string> cho phép nh?n tham s? t? XAML qua CommandParameter.
         NumberCommand = new RelayCommand<string>(OnNumberPressed);
         DecimalCommand = new RelayCommand(OnDecimalPressed);
         OperatorCommand = new RelayCommand<string>(OnOperatorPressed);
@@ -59,7 +78,10 @@ public class CalculatorViewModel : INotifyPropertyChanged
         ToggleSignCommand = new RelayCommand(OnToggleSignPressed);
     }
 
-    // ====== Xu ly thao tac nguoi dung ======
+    // ====== X? lý t?ng nút b?m ======
+    // M?i hàm ch? làm 2 vi?c:
+    //   1. G?i Service x? lý logic.
+    //   2. C?p nh?t l?i property ?? View t? c?p nh?t qua DataBinding.
 
     private void OnNumberPressed(string digit)
     {
@@ -109,7 +131,8 @@ public class CalculatorViewModel : INotifyPropertyChanged
         SyncDisplay();
     }
 
-    // Dong bo du lieu tu Service sang property cua ViewModel.
+    // ??ng b? d? li?u t? Service vào property c?a ViewModel.
+    // View s? t? c?p nh?t vì INotifyPropertyChanged.
     private void SyncDisplay()
     {
         DisplayText = _service.DisplayText;
@@ -117,7 +140,8 @@ public class CalculatorViewModel : INotifyPropertyChanged
     }
 
     // ====== INotifyPropertyChanged ======
-    // Bao cho View biet property vua thay doi de tu dong cap nhat UI.
+    // C? ch? thông báo cho View bi?t khi property thay ??i.
+    // [CallerMemberName] t? ?i?n tên property ?ang g?i, không c?n vi?t th? công.
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

@@ -10,17 +10,7 @@
         ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
         Background="#202020">
-
-    <!--
-        =========================
-        KHU VỰC TÀI NGUYÊN GIAO DIỆN
-        =========================
-        Mục tiêu:
-        - Tái sử dụng style để tránh lặp code.
-        - Dễ thay đổi giao diện toàn bộ nút chỉ tại 1 nơi.
-    -->
     <Window.Resources>
-        <!-- Style cơ sở áp dụng chung cho tất cả nút -->
         <Style x:Key="BaseButtonStyle" TargetType="Button">
             <Setter Property="Margin" Value="4" />
             <Setter Property="FontSize" Value="20" />
@@ -30,30 +20,19 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
 
-        <!-- Style cho nhóm nút số -->
         <Style x:Key="NumberButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
             <Setter Property="Background" Value="#303030" />
         </Style>
 
-        <!-- Style cho nhóm nút phép toán/chức năng -->
         <Style x:Key="OperatorButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
             <Setter Property="Background" Value="#3B3B3B" />
         </Style>
 
-        <!-- Style nổi bật cho nút '=' -->
         <Style x:Key="EqualButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
             <Setter Property="Background" Value="#005A9E" />
         </Style>
     </Window.Resources>
 
-    <!--
-        =========================
-        BỐ CỤC CHÍNH CỦA CỬA SỔ
-        =========================
-        Cấu trúc gồm 7 hàng:
-        - Hàng 0: màn hình hiển thị biểu thức và kết quả.
-        - Hàng 1..6: các cụm phím chức năng/số.
-    -->
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="150" />
@@ -65,11 +44,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--
-            Khu vực hiển thị:
-            - ExpressionTextBlock: dòng biểu thức (ví dụ: 12 + 3 =).
-            - ResultTextBlock: dòng kết quả/số đang nhập.
-        -->
         <Grid Grid.Row="0" Margin="4 8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -94,8 +68,6 @@
                        Text="0" />
         </Grid>
 
-        <!-- Hàng 1: các thao tác điều khiển nhanh -->
-        <!-- % | CE | C | Backspace -->
         <UniformGrid Grid.Row="1" Columns="4">
             <Button Content="%" Tag="Percent" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
             <Button Content="CE" Tag="CE" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
@@ -103,8 +75,6 @@
             <Button Content="⌫" Tag="Backspace" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
         </UniformGrid>
 
-        <!-- Hàng 2: các phép toán một ngôi + phép chia -->
-        <!-- 1/x | x² | √x | ÷ -->
         <UniformGrid Grid.Row="2" Columns="4">
             <Button Content="1/x" Tag="Reciprocal" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
             <Button Content="x²" Tag="Square" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
@@ -112,7 +82,6 @@
             <Button Content="÷" Tag="/" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
         </UniformGrid>
 
-        <!-- Hàng 3: 7 8 9 × -->
         <UniformGrid Grid.Row="3" Columns="4">
             <Button Content="7" Tag="7" Style="{StaticResource NumberButtonStyle}" Click="OnCalculatorButtonClick" />
             <Button Content="8" Tag="8" Style="{StaticResource NumberButtonStyle}" Click="OnCalculatorButtonClick" />
@@ -120,7 +89,6 @@
             <Button Content="×" Tag="*" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
         </UniformGrid>
 
-        <!-- Hàng 4: 4 5 6 − -->
         <UniformGrid Grid.Row="4" Columns="4">
             <Button Content="4" Tag="4" Style="{StaticResource NumberButtonStyle}" Click="OnCalculatorButtonClick" />
             <Button Content="5" Tag="5" Style="{StaticResource NumberButtonStyle}" Click="OnCalculatorButtonClick" />
@@ -128,7 +96,6 @@
             <Button Content="−" Tag="-" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
         </UniformGrid>
 
-        <!-- Hàng 5: 1 2 3 + -->
         <UniformGrid Grid.Row="5" Columns="4">
             <Button Content="1" Tag="1" Style="{StaticResource NumberButtonStyle}" Click="OnCalculatorButtonClick" />
             <Button Content="2" Tag="2" Style="{StaticResource NumberButtonStyle}" Click="OnCalculatorButtonClick" />
@@ -136,7 +103,6 @@
             <Button Content="+" Tag="+" Style="{StaticResource OperatorButtonStyle}" Click="OnCalculatorButtonClick" />
         </UniformGrid>
 
-        <!-- Hàng 6: đổi dấu | 0 | dấu chấm | bằng -->
         <UniformGrid Grid.Row="6" Columns="4">
             <Button Content="+/−" Tag="ToggleSign" Style="{StaticResource NumberButtonStyle}" Click="OnCalculatorButtonClick" />
             <Button Content="0" Tag="0" Style="{StaticResource NumberButtonStyle}" Click="OnCalculatorButtonClick" />

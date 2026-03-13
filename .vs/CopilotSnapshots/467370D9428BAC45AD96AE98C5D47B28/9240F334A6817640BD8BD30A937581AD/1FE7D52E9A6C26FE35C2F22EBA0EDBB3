@@ -1,10 +1,13 @@
-using System;
+﻿using System;
 using System.Windows.Input;
 
 namespace Calculator.Commands;
 
-// RelayCommand boc mot Action thanh ICommand.
-// Dung khi nut bam KHONG can truyen tham so.
+// RelayCommand b?c m?t Action thành ICommand.
+// Dùng khi nút b?m KHÔNG c?n truy?n tham s? vào hàm x? lý.
+//
+// Ví d?:
+//   EqualCommand = new RelayCommand(OnEqualPressed);
 public class RelayCommand : ICommand
 {
     private readonly Action _execute;
@@ -16,13 +19,13 @@ public class RelayCommand : ICommand
         _canExecute = canExecute;
     }
 
-    // WPF goi de kiem tra command co duoc phep chay hay khong.
+    // WPF g?i hàm này ?? quy?t ??nh có disable nút không.
     public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
 
-    // WPF goi khi nguoi dung bam nut.
+    // WPF g?i hàm này khi ng??i dùng b?m nút.
     public void Execute(object? parameter) => _execute();
 
-    // Bao WPF danh gia lai CanExecute khi trang thai thay doi.
+    // S? ki?n ?? báo WPF ki?m tra l?i CanExecute.
     public event EventHandler? CanExecuteChanged
     {
         add => CommandManager.RequerySuggested += value;
@@ -30,8 +33,12 @@ public class RelayCommand : ICommand
     }
 }
 
-// RelayCommand<T> boc Action<T> thanh ICommand.
-// Dung khi can truyen tham so qua CommandParameter.
+// RelayCommand<T> b?c m?t Action<T> thành ICommand.
+// Dùng khi nút b?m C?N truy?n tham s? qua CommandParameter trong XAML.
+//
+// Ví d?:
+//   NumberCommand = new RelayCommand<string>(OnNumberPressed);
+//   XAML: CommandParameter="7"
 public class RelayCommand<T> : ICommand
 {
     private readonly Action<T> _execute;

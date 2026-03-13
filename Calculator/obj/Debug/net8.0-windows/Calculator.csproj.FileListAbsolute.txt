@@ -37,4 +37,3 @@ E:\App\Calculator\Calculator\obj\Debug\net8.0-windows\refint\Calculator.dll
 E:\App\Calculator\Calculator\obj\Debug\net8.0-windows\Calculator.pdb
 E:\App\Calculator\Calculator\obj\Debug\net8.0-windows\Calculator.genruntimeconfig.cache
 E:\App\Calculator\Calculator\obj\Debug\net8.0-windows\ref\Calculator.dll
-E:\App\Calculator\Calculator\obj\Debug\net8.0-windows\Calculator_MarkupCompile.lref

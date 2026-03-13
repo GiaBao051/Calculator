@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Globalization;
 
 namespace Calculator.Services;
@@ -196,8 +196,8 @@ public class CalculatorService
 
     private static string ToSymbol(string op) => op switch
     {
-        "/" => "÷",
-        "*" => "×",
+        "/" => "Ã·",
+        "*" => "Ã—",
         _ => op
     };
 

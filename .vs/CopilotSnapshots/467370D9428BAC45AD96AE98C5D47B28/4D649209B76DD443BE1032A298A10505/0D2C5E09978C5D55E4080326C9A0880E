@@ -1,0 +1,128 @@
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using Calculator.Commands;
+using Calculator.Services;
+
+namespace Calculator.ViewModels;
+
+// CalculatorViewModel la cau noi giua View (XAML) va Service (logic).
+//
+// Quy tac MVVM:
+// - View KHONG biet ben trong ViewModel xu ly the nao.
+// - ViewModel KHONG biet giao dien dang hien thi ra sao.
+// - Hai ben ket noi voi nhau qua DataBinding va Command.
+public class CalculatorViewModel : INotifyPropertyChanged
+{
+    // ====== Service ======
+    // Service chua logic tinh toan, ViewModel chi goi va dong bo du lieu hien thi.
+    private readonly CalculatorService _service = new();
+
+    // ====== Properties bind ra View ======
+
+    // Dong ket qua lon: so dang nhap hoac ket qua sau khi tinh.
+    private string _displayText = "0";
+    public string DisplayText
+    {
+        get => _displayText;
+        private set { _displayText = value; OnPropertyChanged(); }
+    }
+
+    // Dong bieu thuc nho phia tren: vi du "12 +" hoac "12 + 3 =".
+    private string _expressionText = string.Empty;
+    public string ExpressionText
+    {
+        get => _expressionText;
+        private set { _expressionText = value; OnPropertyChanged(); }
+    }
+
+    // ====== Commands gan cho tung nut ======
+    public ICommand NumberCommand { get; }
+    public ICommand DecimalCommand { get; }
+    public ICommand OperatorCommand { get; }
+    public ICommand EqualCommand { get; }
+    public ICommand ResetCommand { get; }
+    public ICommand ClearEntryCommand { get; }
+    public ICommand BackspaceCommand { get; }
+    public ICommand ToggleSignCommand { get; }
+
+    public CalculatorViewModel()
+    {
+        // Moi command duoc anh xa toi 1 ham xu ly tuong ung.
+        NumberCommand = new RelayCommand<string>(OnNumberPressed);
+        DecimalCommand = new RelayCommand(OnDecimalPressed);
+        OperatorCommand = new RelayCommand<string>(OnOperatorPressed);
+        EqualCommand = new RelayCommand(OnEqualPressed);
+        ResetCommand = new RelayCommand(OnResetPressed);
+        ClearEntryCommand = new RelayCommand(OnClearEntryPressed);
+        BackspaceCommand = new RelayCommand(OnBackspacePressed);
+        ToggleSignCommand = new RelayCommand(OnToggleSignPressed);
+    }
+
+    // ====== Xu ly thao tac nguoi dung ======
+
+    private void OnNumberPressed(string digit)
+    {
+        _service.InputNumber(digit);
+        SyncDisplay();
+    }
+
+    private void OnDecimalPressed()
+    {
+        _service.InputDecimalPoint();
+        SyncDisplay();
+    }
+
+    private void OnOperatorPressed(string op)
+    {
+        _service.InputOperator(op);
+        SyncDisplay();
+    }
+
+    private void OnEqualPressed()
+    {
+        _service.Calculate();
+        SyncDisplay();
+    }
+
+    private void OnResetPressed()
+    {
+        _service.Reset();
+        SyncDisplay();
+    }
+
+    private void OnClearEntryPressed()
+    {
+        _service.ClearEntry();
+        SyncDisplay();
+    }
+
+    private void OnBackspacePressed()
+    {
+        _service.Backspace();
+        SyncDisplay();
+    }
+
+    private void OnToggleSignPressed()
+    {
+        _service.ToggleSign();
+        SyncDisplay();
+    }
+
+    // Dong bo du lieu tu Service sang property cua ViewModel.
+    private void SyncDisplay()
+    {
+        DisplayText = _service.DisplayText;
+        ExpressionText = _service.ExpressionText;
+    }
+
+    // ====== INotifyPropertyChanged ======
+    // Bao cho View biet property vua thay doi de tu dong cap nhat UI.
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}

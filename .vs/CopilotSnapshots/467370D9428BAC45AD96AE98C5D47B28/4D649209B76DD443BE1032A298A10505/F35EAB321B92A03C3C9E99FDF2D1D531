@@ -1,0 +1,216 @@
+﻿using System;
+using System.Globalization;
+
+namespace Calculator.Services;
+
+// CalculatorService chua toan bo logic nghiep vu cua may tinh.
+// Lop nay doc lap voi UI, giup de test va de bao tri.
+public class CalculatorService
+{
+    // ====== Trang thai noi bo ======
+
+    // Toan hang thu nhat (vi du: 12 trong phep 12 + 3).
+    private decimal? _firstOperand;
+
+    // Toan tu hien tai (+, -, *, /).
+    private string? _currentOperator;
+
+    // true  => dang cho nguoi dung nhap so moi.
+    // false => dang nhap tiep so hien tai.
+    private bool _isWaitingForNewInput = true;
+
+    // Danh dau vua hien thi ket qua sau '='.
+    private bool _isShowingResult;
+
+    // ====== Du lieu hien thi ======
+
+    public string DisplayText { get; private set; } = "0";
+    public string ExpressionText { get; private set; } = string.Empty;
+
+    // ====== Nhom nhap lieu ======
+
+    public void InputNumber(string digit)
+    {
+        if (IsError()) Reset();
+
+        if (_isShowingResult && _currentOperator is null)
+        {
+            ExpressionText = string.Empty;
+            _firstOperand = null;
+            _isShowingResult = false;
+        }
+
+        if (_isWaitingForNewInput || DisplayText == "0")
+            DisplayText = digit;
+        else
+            DisplayText += digit;
+
+        _isWaitingForNewInput = false;
+    }
+
+    public void InputDecimalPoint()
+    {
+        if (IsError()) Reset();
+
+        if (_isWaitingForNewInput)
+        {
+            DisplayText = "0.";
+            _isWaitingForNewInput = false;
+            _isShowingResult = false;
+            return;
+        }
+
+        if (!DisplayText.Contains('.'))
+            DisplayText += ".";
+    }
+
+    // ====== Nhom phep toan ======
+
+    public void InputOperator(string op)
+    {
+        if (IsError()) { Reset(); return; }
+
+        try
+        {
+            decimal current = ParseDisplay();
+
+            if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
+            {
+                decimal chainedResult = Compute(_firstOperand.Value, current, _currentOperator);
+                _firstOperand = chainedResult;
+                DisplayText = Format(chainedResult);
+            }
+            else
+            {
+                _firstOperand = current;
+            }
+
+            _currentOperator = op;
+            _isWaitingForNewInput = true;
+            _isShowingResult = false;
+            ExpressionText = $"{Format(_firstOperand.Value)} {ToSymbol(op)}";
+        }
+        catch (DivideByZeroException) { SetError("Khong the chia cho 0"); }
+        catch { SetError("Loi phep tinh"); }
+    }
+
+    public void Calculate()
+    {
+        if (_firstOperand is null || _currentOperator is null || _isWaitingForNewInput || IsError())
+            return;
+
+        decimal second = ParseDisplay();
+
+        try
+        {
+            decimal result = Compute(_firstOperand.Value, second, _currentOperator);
+            ExpressionText = $"{Format(_firstOperand.Value)} {ToSymbol(_currentOperator)} {Format(second)} =";
+            DisplayText = Format(result);
+
+            _firstOperand = result;
+            _currentOperator = null;
+            _isWaitingForNewInput = true;
+            _isShowingResult = true;
+        }
+        catch (DivideByZeroException) { SetError("Khong the chia cho 0"); }
+        catch { SetError("Loi phep tinh"); }
+    }
+
+    // ====== Nhom thao tac he thong ======
+
+    public void Reset()
+    {
+        _firstOperand = null;
+        _currentOperator = null;
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+        DisplayText = "0";
+        ExpressionText = string.Empty;
+    }
+
+    public void ClearEntry()
+    {
+        if (IsError()) { Reset(); return; }
+
+        DisplayText = "0";
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+    }
+
+    public void Backspace()
+    {
+        if (_isWaitingForNewInput || IsError()) return;
+
+        if (DisplayText.Length <= 1)
+        {
+            DisplayText = "0";
+            _isWaitingForNewInput = true;
+            return;
+        }
+
+        DisplayText = DisplayText[..^1];
+
+        if (DisplayText == "-" || DisplayText.Length == 0)
+        {
+            DisplayText = "0";
+            _isWaitingForNewInput = true;
+        }
+    }
+
+    public void ToggleSign()
+    {
+        if (IsError()) { Reset(); return; }
+
+        decimal current = ParseDisplay();
+        if (current == 0) return;
+
+        DisplayText = Format(current * -1);
+        _isWaitingForNewInput = false;
+    }
+
+    // ====== Ham noi bo ======
+
+    private static decimal Compute(decimal left, decimal right, string op)
+    {
+        return op switch
+        {
+            "+" => left + right,
+            "-" => left - right,
+            "*" => left * right,
+            "/" when right == 0 => throw new DivideByZeroException(),
+            "/" => left / right,
+            _ => throw new InvalidOperationException("Toan tu khong hop le")
+        };
+    }
+
+    private decimal ParseDisplay()
+    {
+        if (!decimal.TryParse(DisplayText, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value))
+            throw new FormatException("Gia tri hien thi khong hop le");
+
+        return value;
+    }
+
+    private static string Format(decimal number) =>
+        number.ToString(CultureInfo.InvariantCulture);
+
+    private static string ToSymbol(string op) => op switch
+    {
+        "/" => "÷",
+        "*" => "×",
+        _ => op
+    };
+
+    private bool IsError() =>
+        !decimal.TryParse(DisplayText, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
+
+    private void SetError(string message)
+    {
+        ExpressionText = string.Empty;
+        DisplayText = message;
+        _firstOperand = null;
+        _currentOperator = null;
+        _isWaitingForNewInput = true;
+        _isShowingResult = true;
+    }
+}

@@ -3,36 +3,47 @@ using System.Globalization;
 
 namespace Calculator.Services;
 
-// CalculatorService chua toan bo logic nghiep vu cua may tinh.
-// Lop nay doc lap voi UI, giup de test va de bao tri.
+// Lop CalculatorService chiu trach nhiem xu ly toan bo logic nghiep vu cua may tinh.
+// Tac biet hoan toan khoi User Interface. Cung cap kha nang test va tai su dung cao.
 public class CalculatorService
 {
-    // ====== Trang thai noi bo ======
+    // ==========================================
+    // 1. BIEN TRANG THAI NHO (STATE VARIABLES)
+    // ==========================================
 
-    // Toan hang thu nhat (vi du: 12 trong phep 12 + 3).
+    // Toan hang thu nhat dang cho (VD: 12 trong phep tinh 12 + 3).
     private decimal? _firstOperand;
 
-    // Toan tu hien tai (+, -, *, /).
+    // Toan tu hien tai (VD: +, -, *, /).
     private string? _currentOperator;
 
-    // true  => dang cho nguoi dung nhap so moi.
-    // false => dang nhap tiep so hien tai.
+    // True neu he thong dang cho ky tu moi (sau khi bam phep toan hoac dau bang).
     private bool _isWaitingForNewInput = true;
 
-    // Danh dau vua hien thi ket qua sau '='.
+    // True neu dong hien thi chinh dang la ket qua cua phep tinh truoc do.
     private bool _isShowingResult;
 
-    // ====== Du lieu hien thi ======
+    // ==========================================
+    // 2. CAC THUOC TINH GIAO TIEP VOI VIEWMODEL
+    // ==========================================
 
+    // Dong van ban hien thi lo lon (ket qua hoac dang nhap dieu).
     public string DisplayText { get; private set; } = "0";
+
+    // Dong van ban nho phia tren the hien bieu thuc dang tinh.
     public string ExpressionText { get; private set; } = string.Empty;
 
-    // ====== Nhom nhap lieu ======
+    // ==========================================
+    // 3. XU LY THAO TAC NHAP LIEU CA CO BAN
+    // ==========================================
 
+    // Xu ly viec an cac phim tu 0 - 9.
     public void InputNumber(string digit)
     {
         if (IsError()) Reset();
 
+        // Neu da co ket qua cua phep toan truoc roi ma chua bam phep tinh ke tiep, 
+        // thi tu dong lam moi hoan toan khi nhap so moi.
         if (_isShowingResult && _currentOperator is null)
         {
             ExpressionText = string.Empty;
@@ -48,6 +59,7 @@ public class CalculatorService
         _isWaitingForNewInput = false;
     }
 
+    // Xu ly phim nhap ky tu cham '.' phan thap phan. Dam bao chi co 1 dau cham ton tai.
     public void InputDecimalPoint()
     {
         if (IsError()) Reset();
@@ -64,8 +76,11 @@ public class CalculatorService
             DisplayText += ".";
     }
 
-    // ====== Nhom phep toan ======
+    // ==========================================
+    // 4. XU LY PHEP TOAN & TINH TOAN LOGIC
+    // ==========================================
 
+    // Duoc goi khi nhan vao cac phep toan bo tro nhu '+, -, *, /'.
     public void InputOperator(string op)
     {
         if (IsError()) { Reset(); return; }
@@ -74,6 +89,7 @@ public class CalculatorService
         {
             decimal current = ParseDisplay();
 
+            // Ho tro tinh chuoi lien tiep. (Vi du: nhap 1 + 2 + thi khi nhan dau + lan 2 se tinh ra 3 truoc).
             if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
             {
                 decimal chainedResult = Compute(_firstOperand.Value, current, _currentOperator);
@@ -94,6 +110,7 @@ public class CalculatorService
         catch { SetError("Loi phep tinh"); }
     }
 
+    // Duoc goi khi nhan nut dau '=' de thuc hien phep tinh va ket thuc block hien tai.
     public void Calculate()
     {
         if (_firstOperand is null || _currentOperator is null || _isWaitingForNewInput || IsError())
@@ -116,8 +133,11 @@ public class CalculatorService
         catch { SetError("Loi phep tinh"); }
     }
 
-    // ====== Nhom thao tac he thong ======
+    // ==========================================
+    // 5. XU LY THAO TAC DIEU KHIEN CHUC NANG
+    // ==========================================
 
+    // Xoa sach tat ca lich su hien tai, ke ve so 0.
     public void Reset()
     {
         _firstOperand = null;
@@ -128,6 +148,7 @@ public class CalculatorService
         ExpressionText = string.Empty;
     }
 
+    // Xoa ky tu hoac so vua nhap tren man hinh, KHONG bo phep tinh hay toan hang truoc.
     public void ClearEntry()
     {
         if (IsError()) { Reset(); return; }
@@ -136,6 +157,8 @@ public class CalculatorService
         _isWaitingForNewInput = true;
         _isShowingResult = false;
     }
+
+    // Xoa dung mot ky tu cuoi cùng ra khoi man hinh hien thi. Tu dong handle dau '-'.
 
     public void Backspace()
     {
@@ -148,7 +171,7 @@ public class CalculatorService
             return;
         }
 
-        DisplayText = DisplayText[..^1];
+        DisplayText = DisplayText[..^1]; // Loai bo 1 ky tu tu cuoi chuoi
 
         if (DisplayText == "-" || DisplayText.Length == 0)
         {
@@ -157,6 +180,7 @@ public class CalculatorService
         }
     }
 
+    // Dao vi so am va so duong. Bo qua phan dao dau neu la so 0.
     public void ToggleSign()
     {
         if (IsError()) { Reset(); return; }
@@ -168,8 +192,11 @@ public class CalculatorService
         _isWaitingForNewInput = false;
     }
 
-    // ====== Ham noi bo ======
+    // ==========================================
+    // 6. HAM TIEN ICH NOI BO (INTERNAL HELPERS)
+    // ==========================================
 
+    // Chua logic Toan hoc chinh.
     private static decimal Compute(decimal left, decimal right, string op)
     {
         return op switch
@@ -183,6 +210,7 @@ public class CalculatorService
         };
     }
 
+    // Dam bao Parse string xuong kieu Decimal tuong dong voi moi van hoa
     private decimal ParseDisplay()
     {
         if (!decimal.TryParse(DisplayText, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value))
@@ -191,9 +219,11 @@ public class CalculatorService
         return value;
     }
 
+    // Dam bao ghi Decimal vao he thong String chinh xac.
     private static string Format(decimal number) =>
         number.ToString(CultureInfo.InvariantCulture);
 
+    // Bien doi cac tu ky hieu thong thuong sang de nhin tren UI hon (nhan va chia).
     private static string ToSymbol(string op) => op switch
     {
         "/" => "÷",
@@ -201,9 +231,11 @@ public class CalculatorService
         _ => op
     };
 
+    // Kiem tra thu tren do dang bao loi kieu chu (Vi du 'Cannot Divide By Zero')
     private bool IsError() =>
         !decimal.TryParse(DisplayText, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
 
+    // Kich hoat hien loi va Clear tat ca System
     private void SetError(string message)
     {
         ExpressionText = string.Empty;

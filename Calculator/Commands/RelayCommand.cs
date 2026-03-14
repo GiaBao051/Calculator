@@ -3,8 +3,8 @@ using System.Windows.Input;
 
 namespace Calculator.Commands;
 
-// RelayCommand boc mot Action thanh ICommand.
-// Dung khi nut bam KHONG can truyen tham so.
+// Doi tuong ke thua ICommand giup chuyen doi cac chuc nang (Action) thanh lenh
+// de dung o tang View (XAML). Duoc truyen thong so KHONG co tham so.
 public class RelayCommand : ICommand
 {
     private readonly Action _execute;
@@ -16,13 +16,13 @@ public class RelayCommand : ICommand
         _canExecute = canExecute;
     }
 
-    // WPF goi de kiem tra command co duoc phep chay hay khong.
+    // He thong WPF kiem tra phan tu nay de mo hay khoa (enable/disable) nut bam.
     public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
 
-    // WPF goi khi nguoi dung bam nut.
+    // Duoc thuc thi sau do neu thoa man.
     public void Execute(object? parameter) => _execute();
 
-    // Bao WPF danh gia lai CanExecute khi trang thai thay doi.
+    // Su kien nhan dang thay doi phia nguoi dung nham reset lai kiem tra.
     public event EventHandler? CanExecuteChanged
     {
         add => CommandManager.RequerySuggested += value;
@@ -30,8 +30,7 @@ public class RelayCommand : ICommand
     }
 }
 
-// RelayCommand<T> boc Action<T> thanh ICommand.
-// Dung khi can truyen tham so qua CommandParameter.
+// Mo rong dac tinh nay (Generic). Su dung cho nhung nut nhan CO THAM SO (CommandParameter).
 public class RelayCommand<T> : ICommand
 {
     private readonly Action<T> _execute;

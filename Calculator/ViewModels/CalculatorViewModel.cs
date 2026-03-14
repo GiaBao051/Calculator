@@ -6,21 +6,22 @@ using Calculator.Services;
 
 namespace Calculator.ViewModels;
 
-// CalculatorViewModel la cau noi giua View (XAML) va Service (logic).
-//
-// Quy tac MVVM:
-// - View KHONG biet ben trong ViewModel xu ly the nao.
-// - ViewModel KHONG biet giao dien dang hien thi ra sao.
-// - Hai ben ket noi voi nhau qua DataBinding va Command.
+// Doi tuong CalculatorViewModel la tang trung gian de the hien du lieu cho UI.
+// Theo chuan MVVM: DataBinding giao tiep tu dong ma khong can Code-Behind biet cac dieu khien ben trong.
 public class CalculatorViewModel : INotifyPropertyChanged
 {
-    // ====== Service ======
-    // Service chua logic tinh toan, ViewModel chi goi va dong bo du lieu hien thi.
+    // ==========================================
+    // 1. DICH VU (SERVICE)
+    // ==========================================
+
+    // Chua toan bo logic. Tang nay chi can goi va dong bo len property.
     private readonly CalculatorService _service = new();
 
-    // ====== Properties bind ra View ======
+    // ==========================================
+    // 2. THUOC TINH RANG BUOC GIAO DIEN (PROPERTIES)
+    // ==========================================
 
-    // Dong ket qua lon: so dang nhap hoac ket qua sau khi tinh.
+    // Dong thong bao ket qua (Chu so lon, dau ra ket qua).
     private string _displayText = "0";
     public string DisplayText
     {
@@ -28,7 +29,7 @@ public class CalculatorViewModel : INotifyPropertyChanged
         private set { _displayText = value; OnPropertyChanged(); }
     }
 
-    // Dong bieu thuc nho phia tren: vi du "12 +" hoac "12 + 3 =".
+    // Dong thong bao bieu thuc hien tai (Chu so nho o tren, bieu thuc '12 +').
     private string _expressionText = string.Empty;
     public string ExpressionText
     {
@@ -36,7 +37,10 @@ public class CalculatorViewModel : INotifyPropertyChanged
         private set { _expressionText = value; OnPropertyChanged(); }
     }
 
-    // ====== Commands gan cho tung nut ======
+    // ==========================================
+    // 3. DANH SACH LENH THUC THI (COMMANDS)
+    // ==========================================
+
     public ICommand NumberCommand { get; }
     public ICommand DecimalCommand { get; }
     public ICommand OperatorCommand { get; }
@@ -48,10 +52,13 @@ public class CalculatorViewModel : INotifyPropertyChanged
 
     public CalculatorViewModel()
     {
-        // Moi command duoc anh xa toi 1 ham xu ly tuong ung.
+        // Khoi tao cac lenh mapping voi cac ham dieu kien.
+        // Nhom yeu cau tham so dau vao.
         NumberCommand = new RelayCommand<string>(OnNumberPressed);
-        DecimalCommand = new RelayCommand(OnDecimalPressed);
         OperatorCommand = new RelayCommand<string>(OnOperatorPressed);
+
+        // Nhom khong yeu cau tham so dau vao.
+        DecimalCommand = new RelayCommand(OnDecimalPressed);
         EqualCommand = new RelayCommand(OnEqualPressed);
         ResetCommand = new RelayCommand(OnResetPressed);
         ClearEntryCommand = new RelayCommand(OnClearEntryPressed);
@@ -59,7 +66,9 @@ public class CalculatorViewModel : INotifyPropertyChanged
         ToggleSignCommand = new RelayCommand(OnToggleSignPressed);
     }
 
-    // ====== Xu ly thao tac nguoi dung ======
+    // ==========================================
+    // 4. HAM XU LY DIEU KHIEN (ACTION HANDLERS)
+    // ==========================================
 
     private void OnNumberPressed(string digit)
     {
@@ -109,18 +118,24 @@ public class CalculatorViewModel : INotifyPropertyChanged
         SyncDisplay();
     }
 
-    // Dong bo du lieu tu Service sang property cua ViewModel.
+    // ==========================================
+    // 5. CA CAP NHAT VA DONG BO (SYNCHRONIZATION)
+    // ==========================================
+
+    // Dong bo lai toan bo du lieu that tren UI theo xu ly cua Service.
     private void SyncDisplay()
     {
         DisplayText = _service.DisplayText;
         ExpressionText = _service.ExpressionText;
     }
 
-    // ====== INotifyPropertyChanged ======
-    // Bao cho View biet property vua thay doi de tu dong cap nhat UI.
+    // ==========================================
+    // 6. TINH NANG THONG BAO THAY DOI EVENT PROPERTY
+    // ==========================================
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    // CallerMemberName tu dong nhan ten thuoc tinh thay doi.
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

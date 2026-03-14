@@ -1,0 +1,64 @@
+﻿using System;
+using System.Windows.Input;
+
+namespace Calculator.Commands;
+
+// Doi tuong ke thua ICommand giup chuyen doi cac chuc nang (Action) thanh lenh
+// de dung o tang View (XAML). Duoc truyen thong so KHONG co tham so.
+public class RelayCommand : ICommand
+{
+    private readonly Action _execute;
+    private readonly Func<bool>? _canExecute;
+
+    public RelayCommand(Action execute, Func<bool>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    // He thong WPF kiem tra phan tu nay de mo hay khoa (enable/disable) nut bam.
+    public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
+
+    // Duoc thuc thi sau do neu thoa man.
+    public void Execute(object? parameter) => _execute();
+
+    // Su kien nhan dang thay doi phia nguoi dung nham reset lai kiem tra.
+    public event EventHandler? CanExecuteChanged
+    {
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
+    }
+}
+
+// Mo rong dac tinh nay (Generic). Su dung cho nhung nut nhan CO THAM SO (CommandParameter).
+public class RelayCommand<T> : ICommand
+{
+    private readonly Action<T> _execute;
+    private readonly Func<T, bool>? _canExecute;
+
+    public RelayCommand(Action<T> execute, Func<T, bool>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    public bool CanExecute(object? parameter)
+    {
+        if (parameter is T value)
+            return _canExecute?.Invoke(value) ?? true;
+
+        return true;
+    }
+
+    public void Execute(object? parameter)
+    {
+        if (parameter is T value)
+            _execute(value);
+    }
+
+    public event EventHandler? CanExecuteChanged
+    {
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
+    }
+}

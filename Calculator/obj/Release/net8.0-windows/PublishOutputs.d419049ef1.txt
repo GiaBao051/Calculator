@@ -1,0 +1,5 @@
+E:\App\Publish\Calculator.exe
+E:\App\Publish\Calculator.dll
+E:\App\Publish\Calculator.deps.json
+E:\App\Publish\Calculator.runtimeconfig.json
+E:\App\Publish\Calculator.pdb

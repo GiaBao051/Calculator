@@ -10,7 +10,7 @@ Dự án được xây dựng nhằm:
 
 Phiên bản hiện tại ưu tiên cách làm **thực tế, dễ hiểu** cho sinh viên, với logic chính đặt trong `MainWindow.xaml.cs` (code-behind).
 
----
+----
 
 ## 2. Công nghệ sử dụng
 - **Ngôn ngữ:** C# 12

@@ -1,0 +1,433 @@
+﻿using System;
+using System.Globalization;
+
+namespace Calculator.Services;
+
+public class CalculatorService
+{
+    private decimal? _firstOperand;
+    private string? _currentOperator;
+    private bool _isWaitingForNewInput = true;
+    private bool _isShowingResult;
+
+    private decimal? _lastSecondOperand;
+    private string? _lastOperator;
+
+    private decimal _memoryValue;
+
+    public string DisplayText { get; private set; } = "0";
+    public string ExpressionText { get; private set; } = string.Empty;
+    public bool HasMemory { get; private set; }
+
+    private string? _pendingHistoryEntry;
+
+    public void InputNumber(string digit)
+    {
+        if (IsError())
+        {
+            Reset();
+        }
+
+        if (_isShowingResult && _currentOperator is null)
+        {
+            ExpressionText = string.Empty;
+            _firstOperand = null;
+            _lastOperator = null;
+            _lastSecondOperand = null;
+            _isShowingResult = false;
+        }
+
+        if (_isWaitingForNewInput || DisplayText == "0")
+        {
+            DisplayText = digit;
+        }
+        else
+        {
+            DisplayText += digit;
+        }
+
+        _isWaitingForNewInput = false;
+    }
+
+    public void InputDecimalPoint()
+    {
+        if (IsError())
+        {
+            Reset();
+        }
+
+        if (_isWaitingForNewInput)
+        {
+            DisplayText = "0.";
+            _isWaitingForNewInput = false;
+            _isShowingResult = false;
+            return;
+        }
+
+        if (!DisplayText.Contains('.'))
+        {
+            DisplayText += ".";
+        }
+    }
+
+    public void InputOperator(string op)
+    {
+        if (IsError())
+        {
+            Reset();
+            return;
+        }
+
+        try
+        {
+            decimal current = ParseDisplay();
+
+            if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
+            {
+                decimal chainedResult = Compute(_firstOperand.Value, current, _currentOperator);
+                _firstOperand = chainedResult;
+                DisplayText = Format(chainedResult);
+            }
+            else
+            {
+                _firstOperand = current;
+            }
+
+            _currentOperator = op;
+            _isWaitingForNewInput = true;
+            _isShowingResult = false;
+            ExpressionText = $"{Format(_firstOperand.Value)} {ToSymbol(op)}";
+        }
+        catch (DivideByZeroException)
+        {
+            SetError("Khong the chia cho 0");
+        }
+        catch
+        {
+            SetError("Loi phep tinh");
+        }
+    }
+
+    public void Calculate()
+    {
+        if (IsError())
+        {
+            return;
+        }
+
+        try
+        {
+            if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
+            {
+                decimal secondOperand = ParseDisplay();
+                decimal result = Compute(_firstOperand.Value, secondOperand, _currentOperator);
+
+                string expression =
+                    $"{Format(_firstOperand.Value)} {ToSymbol(_currentOperator)} {Format(secondOperand)} =";
+
+                ExpressionText = expression;
+                DisplayText = Format(result);
+
+                _lastOperator = _currentOperator;
+                _lastSecondOperand = secondOperand;
+
+                _firstOperand = result;
+                _currentOperator = null;
+                _isWaitingForNewInput = true;
+                _isShowingResult = true;
+
+                _pendingHistoryEntry = $"{expression}  {DisplayText}";
+                return;
+            }
+
+            if (_firstOperand.HasValue && _currentOperator is null && _lastOperator is not null && _lastSecondOperand.HasValue)
+            {
+                decimal repeated = Compute(_firstOperand.Value, _lastSecondOperand.Value, _lastOperator);
+
+                string expression =
+                    $"{Format(_firstOperand.Value)} {ToSymbol(_lastOperator)} {Format(_lastSecondOperand.Value)} =";
+
+                ExpressionText = expression;
+                DisplayText = Format(repeated);
+
+                _firstOperand = repeated;
+                _isWaitingForNewInput = true;
+                _isShowingResult = true;
+
+                _pendingHistoryEntry = $"{expression}  {DisplayText}";
+            }
+        }
+        catch (DivideByZeroException)
+        {
+            SetError("Khong the chia cho 0");
+        }
+        catch
+        {
+            SetError("Loi phep tinh");
+        }
+    }
+
+    public void ApplyUnaryOperation(string operation)
+    {
+        if (IsError())
+        {
+            Reset();
+            return;
+        }
+
+        decimal current = ParseDisplay();
+
+        try
+        {
+            decimal result = operation switch
+            {
+                "Reciprocal" when current == 0 => throw new DivideByZeroException(),
+                "Reciprocal" => 1 / current,
+                "Square" => current * current,
+                "Sqrt" when current < 0 => throw new InvalidOperationException("Khong the can bac hai so am"),
+                "Sqrt" => (decimal)Math.Sqrt((double)current),
+                _ => current
+            };
+
+            string expression = operation switch
+            {
+                "Reciprocal" => $"1/({Format(current)})",
+                "Square" => $"sqr({Format(current)})",
+                "Sqrt" => $"√({Format(current)})",
+                _ => string.Empty
+            };
+
+            ExpressionText = expression;
+            DisplayText = Format(result);
+
+            _firstOperand = result;
+            _currentOperator = null;
+            _isWaitingForNewInput = true;
+            _isShowingResult = true;
+
+            if (!string.IsNullOrWhiteSpace(expression))
+            {
+                _pendingHistoryEntry = $"{expression} =  {DisplayText}";
+            }
+        }
+        catch (DivideByZeroException)
+        {
+            SetError("Khong the chia cho 0");
+        }
+        catch (InvalidOperationException ex)
+        {
+            SetError(ex.Message);
+        }
+        catch
+        {
+            SetError("Loi phep tinh");
+        }
+    }
+
+    public void ApplyPercent()
+    {
+        if (IsError())
+        {
+            Reset();
+            return;
+        }
+
+        decimal current = ParseDisplay();
+
+        decimal percent = _firstOperand.HasValue && _currentOperator is not null
+            ? _firstOperand.Value * current / 100m
+            : current / 100m;
+
+        DisplayText = Format(percent);
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+
+        if (_firstOperand.HasValue && _currentOperator is not null)
+        {
+            ExpressionText = $"{Format(_firstOperand.Value)} {ToSymbol(_currentOperator)} {Format(percent)}";
+        }
+    }
+
+    public void Reset()
+    {
+        _firstOperand = null;
+        _currentOperator = null;
+        _lastOperator = null;
+        _lastSecondOperand = null;
+
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+
+        ExpressionText = string.Empty;
+        DisplayText = "0";
+    }
+
+    public void ClearEntry()
+    {
+        if (IsError())
+        {
+            Reset();
+            return;
+        }
+
+        DisplayText = "0";
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+    }
+
+    public void Backspace()
+    {
+        if (_isWaitingForNewInput || IsError())
+        {
+            return;
+        }
+
+        if (DisplayText.Length <= 1)
+        {
+            DisplayText = "0";
+            _isWaitingForNewInput = true;
+            return;
+        }
+
+        DisplayText = DisplayText[..^1];
+
+        if (DisplayText == "-" || DisplayText.Length == 0)
+        {
+            DisplayText = "0";
+            _isWaitingForNewInput = true;
+        }
+    }
+
+    public void ToggleSign()
+    {
+        if (IsError())
+        {
+            Reset();
+            return;
+        }
+
+        decimal current = ParseDisplay();
+        if (current == 0)
+        {
+            return;
+        }
+
+        DisplayText = Format(current * -1);
+        _isWaitingForNewInput = false;
+    }
+
+    public void MemoryClear()
+    {
+        _memoryValue = 0;
+        HasMemory = false;
+    }
+
+    public void MemoryRecall()
+    {
+        if (!HasMemory)
+        {
+            return;
+        }
+
+        DisplayText = Format(_memoryValue);
+        _isWaitingForNewInput = false;
+        _isShowingResult = false;
+    }
+
+    public void MemoryStore()
+    {
+        if (IsError())
+        {
+            return;
+        }
+
+        _memoryValue = ParseDisplay();
+        HasMemory = true;
+    }
+
+    public void MemoryAdd()
+    {
+        if (IsError())
+        {
+            return;
+        }
+
+        _memoryValue += ParseDisplay();
+        HasMemory = true;
+    }
+
+    public void MemorySubtract()
+    {
+        if (IsError())
+        {
+            return;
+        }
+
+        _memoryValue -= ParseDisplay();
+        HasMemory = true;
+    }
+
+    public string? PopHistoryEntry()
+    {
+        string? value = _pendingHistoryEntry;
+        _pendingHistoryEntry = null;
+        return value;
+    }
+
+    private static decimal Compute(decimal left, decimal right, string op)
+    {
+        return op switch
+        {
+            "+" => left + right,
+            "-" => left - right,
+            "*" => left * right,
+            "/" when right == 0 => throw new DivideByZeroException(),
+            "/" => left / right,
+            _ => throw new InvalidOperationException("Toan tu khong hop le")
+        };
+    }
+
+    private decimal ParseDisplay()
+    {
+        if (!decimal.TryParse(DisplayText, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value))
+        {
+            throw new FormatException("Gia tri hien thi khong hop le");
+        }
+
+        return value;
+    }
+
+    private static string Format(decimal number)
+    {
+        return number.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string ToSymbol(string op)
+    {
+        return op switch
+        {
+            "/" => "÷",
+            "*" => "×",
+            _ => op
+        };
+    }
+
+    private bool IsError()
+    {
+        return !decimal.TryParse(DisplayText, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
+    }
+
+    private void SetError(string message)
+    {
+        ExpressionText = string.Empty;
+        DisplayText = message;
+
+        _firstOperand = null;
+        _currentOperator = null;
+        _lastOperator = null;
+        _lastSecondOperand = null;
+
+        _isWaitingForNewInput = true;
+        _isShowingResult = true;
+    }
+}

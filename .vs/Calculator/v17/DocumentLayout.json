@@ -58,8 +58,7 @@
               "RelativeToolTip": "Calculator\\Models\\HistoryItem.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-14T17:16:28.217Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-14T17:16:28.217Z"
             },
             {
               "$type": "Document",
@@ -71,8 +70,7 @@
               "RelativeToolTip": "Calculator\\ViewModels\\BaseViewModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-14T17:16:14.228Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-14T17:16:14.228Z"
             },
             {
               "$type": "Document",
@@ -84,8 +82,7 @@
               "RelativeToolTip": "Calculator\\ViewModels\\CalculatorViewModel.cs",
               "ViewState": "AgIAAOkAAAAAAAAAAIBZwO4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-11T16:56:06.615Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-11T16:56:06.615Z"
             },
             {
               "$type": "Document",
@@ -95,9 +92,10 @@
               "RelativeDocumentMoniker": "Calculator\\Services\\CalculatorService.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\Services\\CalculatorService.cs",
               "RelativeToolTip": "Calculator\\Services\\CalculatorService.cs",
-              "ViewState": "AgIAAK0BAAAAAAAAAEBVwGsAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAALABAAAAAAAAAABBwGsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-11T16:55:40.719Z"
+              "WhenOpened": "2026-03-11T16:55:40.719Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -145,8 +143,7 @@
               "ToolTip": "E:\\App\\Calculator\\Calculator\\MainWindow.xaml",
               "RelativeToolTip": "Calculator\\MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-03-10T09:20:37.766Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-10T09:20:37.766Z"
             }
           ]
         }

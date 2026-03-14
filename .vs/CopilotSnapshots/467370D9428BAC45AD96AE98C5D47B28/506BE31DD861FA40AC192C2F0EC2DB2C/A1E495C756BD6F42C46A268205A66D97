@@ -1,5 +1,4 @@
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Calculator.Commands;
@@ -38,17 +37,6 @@ public class CalculatorViewModel : INotifyPropertyChanged
         private set { _expressionText = value; OnPropertyChanged(); }
     }
 
-    // Danh sach lich su phep tinh de hien thi ben panel History.
-    public ObservableCollection<string> HistoryItems { get; } = new();
-
-    // Co hieu cho biet da co gia tri Memory hay chua.
-    private bool _hasMemory;
-    public bool HasMemory
-    {
-        get => _hasMemory;
-        private set { _hasMemory = value; OnPropertyChanged(); }
-    }
-
     // ==========================================
     // 3. DANH SACH LENH THUC THI (COMMANDS)
     // ==========================================
@@ -61,17 +49,6 @@ public class CalculatorViewModel : INotifyPropertyChanged
     public ICommand ClearEntryCommand { get; }
     public ICommand BackspaceCommand { get; }
     public ICommand ToggleSignCommand { get; }
-
-    public ICommand PercentCommand { get; }
-    public ICommand UnaryCommand { get; }
-
-    public ICommand MemoryClearCommand { get; }
-    public ICommand MemoryRecallCommand { get; }
-    public ICommand MemoryStoreCommand { get; }
-    public ICommand MemoryAddCommand { get; }
-    public ICommand MemorySubtractCommand { get; }
-
-    public ICommand ClearHistoryCommand { get; }
 
     public CalculatorViewModel()
     {
@@ -87,19 +64,6 @@ public class CalculatorViewModel : INotifyPropertyChanged
         ClearEntryCommand = new RelayCommand(OnClearEntryPressed);
         BackspaceCommand = new RelayCommand(OnBackspacePressed);
         ToggleSignCommand = new RelayCommand(OnToggleSignPressed);
-
-        PercentCommand = new RelayCommand(OnPercentPressed);
-        UnaryCommand = new RelayCommand<string>(OnUnaryPressed);
-
-        MemoryClearCommand = new RelayCommand(OnMemoryClearPressed);
-        MemoryRecallCommand = new RelayCommand(OnMemoryRecallPressed);
-        MemoryStoreCommand = new RelayCommand(OnMemoryStorePressed);
-        MemoryAddCommand = new RelayCommand(OnMemoryAddPressed);
-        MemorySubtractCommand = new RelayCommand(OnMemorySubtractPressed);
-
-        ClearHistoryCommand = new RelayCommand(OnClearHistoryPressed);
-
-        SyncDisplay();
     }
 
     // ==========================================
@@ -154,53 +118,6 @@ public class CalculatorViewModel : INotifyPropertyChanged
         SyncDisplay();
     }
 
-    private void OnPercentPressed()
-    {
-        _service.ApplyPercent();
-        SyncDisplay();
-    }
-
-    private void OnUnaryPressed(string operation)
-    {
-        _service.ApplyUnaryOperation(operation);
-        SyncDisplay();
-    }
-
-    private void OnMemoryClearPressed()
-    {
-        _service.MemoryClear();
-        SyncDisplay();
-    }
-
-    private void OnMemoryRecallPressed()
-    {
-        _service.MemoryRecall();
-        SyncDisplay();
-    }
-
-    private void OnMemoryStorePressed()
-    {
-        _service.MemoryStore();
-        SyncDisplay();
-    }
-
-    private void OnMemoryAddPressed()
-    {
-        _service.MemoryAdd();
-        SyncDisplay();
-    }
-
-    private void OnMemorySubtractPressed()
-    {
-        _service.MemorySubtract();
-        SyncDisplay();
-    }
-
-    private void OnClearHistoryPressed()
-    {
-        HistoryItems.Clear();
-    }
-
     // ==========================================
     // 5. CA CAP NHAT VA DONG BO (SYNCHRONIZATION)
     // ==========================================
@@ -210,13 +127,6 @@ public class CalculatorViewModel : INotifyPropertyChanged
     {
         DisplayText = _service.DisplayText;
         ExpressionText = _service.ExpressionText;
-        HasMemory = _service.HasMemory;
-
-        string? historyEntry = _service.PopHistoryEntry();
-        if (!string.IsNullOrWhiteSpace(historyEntry))
-        {
-            HistoryItems.Insert(0, historyEntry);
-        }
     }
 
     // ==========================================

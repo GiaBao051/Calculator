@@ -1,0 +1,622 @@
+﻿using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+
+namespace Calculator;
+
+// Lop MainWindow xu ly giao dien va dieu huong cac thao tac cua may tinh.
+// Phien ban nay da nang cap them: History, Memory, keyboard input va dau '=' lap lai.
+public partial class MainWindow : Window
+{
+    // ==========================================
+    // 1. BIEN TRANG THAI CHINH CUA PHEP TINH
+    // ==========================================
+
+    // Toan hang thu nhat trong phep tinh 2 ngoi.
+    private decimal? _firstOperand;
+
+    // Toan tu hien tai (+, -, *, /).
+    private string? _currentOperator;
+
+    // Danh dau dang cho nguoi dung nhap so moi.
+    private bool _isWaitingForNewInput = true;
+
+    // Danh dau man hinh dang hien thi ket qua.
+    private bool _isShowingResult;
+
+    // Luu thong tin de ho tro bam '=' lap lai.
+    private decimal? _lastSecondOperand;
+    private string? _lastOperator;
+
+    // ==========================================
+    // 2. BIEN CHUC NANG MEMORY
+    // ==========================================
+
+    private decimal _memoryValue;
+    private bool _hasMemory;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        ResetCalculator();
+    }
+
+    // ==========================================
+    // 3. BO DIEU HUONG SU KIEN NUT BAM
+    // ==========================================
+
+    private void OnCalculatorButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string action)
+        {
+            return;
+        }
+
+        HandleAction(action);
+    }
+
+    private void HandleAction(string action)
+    {
+        // Neu la phim so thi xu ly ngay.
+        if (action.Length == 1 && char.IsDigit(action[0]))
+        {
+            AppendNumber(action);
+            return;
+        }
+
+        switch (action)
+        {
+            case ".":
+                AppendDecimalPoint();
+                break;
+            case "+":
+            case "-":
+            case "*":
+            case "/":
+                SetOperator(action);
+                break;
+            case "=":
+                CalculateAndShowResult();
+                break;
+            case "C":
+                ResetCalculator();
+                break;
+            case "CE":
+                ClearEntry();
+                break;
+            case "Backspace":
+                HandleBackspace();
+                break;
+            case "ToggleSign":
+                ToggleSign();
+                break;
+            case "Percent":
+                ApplyPercent();
+                break;
+            case "Reciprocal":
+            case "Square":
+            case "Sqrt":
+                ApplyUnaryOperation(action);
+                break;
+            case "MemoryClear":
+                MemoryClear();
+                break;
+            case "MemoryRecall":
+                MemoryRecall();
+                break;
+            case "MemoryStore":
+                MemoryStore();
+                break;
+            case "MemoryAdd":
+                MemoryAdd();
+                break;
+            case "MemorySubtract":
+                MemorySubtract();
+                break;
+            case "ClearHistory":
+                ClearHistory();
+                break;
+        }
+    }
+
+    // ==========================================
+    // 4. KEYBOARD INPUT
+    // ==========================================
+
+    private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        string? action = e.Key switch
+        {
+            Key.D0 or Key.NumPad0 => "0",
+            Key.D1 or Key.NumPad1 => "1",
+            Key.D2 or Key.NumPad2 => "2",
+            Key.D3 or Key.NumPad3 => "3",
+            Key.D4 or Key.NumPad4 => "4",
+            Key.D5 or Key.NumPad5 => "5",
+            Key.D6 or Key.NumPad6 => "6",
+            Key.D7 or Key.NumPad7 => "7",
+            Key.D8 or Key.NumPad8 => "8",
+            Key.D9 or Key.NumPad9 => "9",
+            Key.Decimal or Key.OemPeriod => ".",
+            Key.Add => "+",
+            Key.Subtract => "-",
+            Key.Multiply => "*",
+            Key.Divide => "/",
+            Key.Enter or Key.Return => "=",
+            Key.Back => "Backspace",
+            Key.Escape => "C",
+            _ => null
+        };
+
+        // Ho tro phim '+' tren hang so khi bam Shift + '='
+        if (action is null && e.Key == Key.OemPlus && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+        {
+            action = "+";
+        }
+
+        // Ho tro phim '-' tren hang so
+        if (action is null && e.Key == Key.OemMinus)
+        {
+            action = "-";
+        }
+
+        if (action is null)
+        {
+            return;
+        }
+
+        HandleAction(action);
+        e.Handled = true;
+    }
+
+    // ==========================================
+    // 5. NHOM NHAP LIEU
+    // ==========================================
+
+    private void AppendNumber(string numberText)
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+        }
+
+        // Neu vua bam '=' va khong co toan tu moi, bat dau phep tinh moi.
+        if (_isShowingResult && _currentOperator is null)
+        {
+            ExpressionTextBlock.Text = string.Empty;
+            _firstOperand = null;
+            _lastOperator = null;
+            _lastSecondOperand = null;
+            _isShowingResult = false;
+        }
+
+        if (_isWaitingForNewInput || ResultTextBlock.Text == "0")
+        {
+            ResultTextBlock.Text = numberText;
+        }
+        else
+        {
+            ResultTextBlock.Text += numberText;
+        }
+
+        _isWaitingForNewInput = false;
+    }
+
+    private void AppendDecimalPoint()
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+        }
+
+        if (_isWaitingForNewInput)
+        {
+            ResultTextBlock.Text = "0.";
+            _isWaitingForNewInput = false;
+            _isShowingResult = false;
+            return;
+        }
+
+        if (!ResultTextBlock.Text.Contains('.'))
+        {
+            ResultTextBlock.Text += ".";
+        }
+    }
+
+    // ==========================================
+    // 6. NHOM PHEP TOAN 2 NGOI
+    // ==========================================
+
+    private void SetOperator(string selectedOperator)
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+            return;
+        }
+
+        try
+        {
+            decimal currentValue = GetCurrentDisplayValue();
+
+            // Tinh chuoi lien tiep: 2 + 3 + -> se ra 5 va cho nhap tiep.
+            if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
+            {
+                decimal chainedResult = CalculateResult(_firstOperand.Value, currentValue, _currentOperator);
+                _firstOperand = chainedResult;
+                ResultTextBlock.Text = FormatNumber(chainedResult);
+            }
+            else
+            {
+                _firstOperand = currentValue;
+            }
+
+            _currentOperator = selectedOperator;
+            _isWaitingForNewInput = true;
+            _isShowingResult = false;
+            ExpressionTextBlock.Text = $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(selectedOperator)}";
+        }
+        catch (DivideByZeroException)
+        {
+            ShowError("Khong the chia cho 0");
+        }
+        catch
+        {
+            ShowError("Loi phep tinh");
+        }
+    }
+
+    private void CalculateAndShowResult()
+    {
+        if (IsDisplayError())
+        {
+            return;
+        }
+
+        try
+        {
+            // Case 1: bam '=' lan dau sau khi nhap day du phep tinh.
+            if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
+            {
+                decimal secondOperand = GetCurrentDisplayValue();
+                decimal result = CalculateResult(_firstOperand.Value, secondOperand, _currentOperator);
+
+                string expression =
+                    $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(_currentOperator)} {FormatNumber(secondOperand)} =";
+                
+                ExpressionTextBlock.Text = expression;
+                ResultTextBlock.Text = FormatNumber(result);
+
+                // Luu lai de ho tro bam '=' lap lai.
+                _lastOperator = _currentOperator;
+                _lastSecondOperand = secondOperand;
+
+                _firstOperand = result;
+                _currentOperator = null;
+                _isWaitingForNewInput = true;
+                _isShowingResult = true;
+
+                AddHistoryEntry(expression, result);
+                return;
+            }
+
+            // Case 2: bam '=' lap lai (VD: 2 + 3 = = =).
+            if (_firstOperand.HasValue && _currentOperator is null && _lastOperator is not null && _lastSecondOperand.HasValue)
+            {
+                decimal repeatedResult = CalculateResult(_firstOperand.Value, _lastSecondOperand.Value, _lastOperator);
+
+                string expression =
+                    $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(_lastOperator)} {FormatNumber(_lastSecondOperand.Value)} =";
+                
+                ExpressionTextBlock.Text = expression;
+                ResultTextBlock.Text = FormatNumber(repeatedResult);
+
+                _firstOperand = repeatedResult;
+                _isWaitingForNewInput = true;
+                _isShowingResult = true;
+
+                AddHistoryEntry(expression, repeatedResult);
+            }
+        }
+        catch (DivideByZeroException)
+        {
+            ShowError("Khong the chia cho 0");
+        }
+        catch
+        {
+            ShowError("Loi phep tinh");
+        }
+    }
+
+    // ==========================================
+    // 7. NHOM PHEP TOAN 1 NGOI
+    // ==========================================
+
+    private void ApplyUnaryOperation(string operation)
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+            return;
+        }
+
+        decimal currentValue = GetCurrentDisplayValue();
+
+        try
+        {
+            decimal result = operation switch
+            {
+                "Reciprocal" when currentValue == 0 => throw new DivideByZeroException(),
+                "Reciprocal" => 1 / currentValue,
+                "Square" => currentValue * currentValue,
+                "Sqrt" when currentValue < 0 => throw new InvalidOperationException("Khong the can bac hai so am"),
+                "Sqrt" => (decimal)Math.Sqrt((double)currentValue),
+                _ => currentValue
+            };
+
+            string expression = operation switch
+            {
+                "Reciprocal" => $"1/({FormatNumber(currentValue)})",
+                "Square" => $"sqr({FormatNumber(currentValue)})",
+                "Sqrt" => $"√({FormatNumber(currentValue)})",
+                _ => string.Empty
+            };
+
+            ExpressionTextBlock.Text = expression;
+            ResultTextBlock.Text = FormatNumber(result);
+
+            _firstOperand = result;
+            _currentOperator = null;
+            _isWaitingForNewInput = true;
+            _isShowingResult = true;
+
+            if (!string.IsNullOrWhiteSpace(expression))
+            {
+                AddHistoryEntry($"{expression} =", result);
+            }
+        }
+        catch (DivideByZeroException)
+        {
+            ShowError("Khong the chia cho 0");
+        }
+        catch (InvalidOperationException ex)
+        {
+            ShowError(ex.Message);
+        }
+        catch
+        {
+            ShowError("Loi phep tinh");
+        }
+    }
+
+    private void ApplyPercent()
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+            return;
+        }
+
+        decimal currentValue = GetCurrentDisplayValue();
+
+        decimal percentValue = _firstOperand.HasValue && _currentOperator is not null
+            ? _firstOperand.Value * currentValue / 100m
+            : currentValue / 100m;
+
+        ResultTextBlock.Text = FormatNumber(percentValue);
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+
+        if (_firstOperand.HasValue && _currentOperator is not null)
+        {
+            ExpressionTextBlock.Text =
+                $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(_currentOperator)} {FormatNumber(percentValue)}";
+        }
+    }
+
+    // ==========================================
+    // 8. NHOM MEMORY
+    // ==========================================
+
+    private void MemoryClear()
+    {
+        _memoryValue = 0;
+        _hasMemory = false;
+    }
+
+    private void MemoryRecall()
+    {
+        if (!_hasMemory)
+        {
+            return;
+        }
+
+        ResultTextBlock.Text = FormatNumber(_memoryValue);
+        _isWaitingForNewInput = false;
+        _isShowingResult = false;
+    }
+
+    private void MemoryStore()
+    {
+        if (IsDisplayError())
+        {
+            return;
+        }
+
+        _memoryValue = GetCurrentDisplayValue();
+        _hasMemory = true;
+    }
+
+    private void MemoryAdd()
+    {
+        if (IsDisplayError())
+        {
+            return;
+        }
+
+        _memoryValue += GetCurrentDisplayValue();
+        _hasMemory = true;
+    }
+
+    private void MemorySubtract()
+    {
+        if (IsDisplayError())
+        {
+            return;
+        }
+
+        _memoryValue -= GetCurrentDisplayValue();
+        _hasMemory = true;
+    }
+
+    // ==========================================
+    // 9. NHOM DIEU KHIEN TRANG THAI
+    // ==========================================
+
+    private void ResetCalculator()
+    {
+        _firstOperand = null;
+        _currentOperator = null;
+        _lastOperator = null;
+        _lastSecondOperand = null;
+
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+
+        ExpressionTextBlock.Text = string.Empty;
+        ResultTextBlock.Text = "0";
+    }
+
+    private void ClearEntry()
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+            return;
+        }
+
+        ResultTextBlock.Text = "0";
+        _isWaitingForNewInput = true;
+        _isShowingResult = false;
+    }
+
+    private void HandleBackspace()
+    {
+        if (_isWaitingForNewInput || IsDisplayError())
+        {
+            return;
+        }
+
+        if (ResultTextBlock.Text.Length <= 1)
+        {
+            ResultTextBlock.Text = "0";
+            _isWaitingForNewInput = true;
+            return;
+        }
+
+        ResultTextBlock.Text = ResultTextBlock.Text[..^1];
+
+        if (ResultTextBlock.Text == "-" || ResultTextBlock.Text.Length == 0)
+        {
+            ResultTextBlock.Text = "0";
+            _isWaitingForNewInput = true;
+        }
+    }
+
+    private void ToggleSign()
+    {
+        if (IsDisplayError())
+        {
+            ResetCalculator();
+            return;
+        }
+
+        decimal currentValue = GetCurrentDisplayValue();
+
+        if (currentValue == 0)
+        {
+            return;
+        }
+
+        ResultTextBlock.Text = FormatNumber(currentValue * -1);
+        _isWaitingForNewInput = false;
+    }
+
+    // ==========================================
+    // 10. NHOM HISTORY
+    // ==========================================
+
+    private void AddHistoryEntry(string expression, decimal result)
+    {
+        string text = $"{expression}  {FormatNumber(result)}";
+        HistoryListBox.Items.Insert(0, text);
+    }
+
+    private void ClearHistory()
+    {
+        HistoryListBox.Items.Clear();
+    }
+
+    // ==========================================
+    // 11. HAM HO TRO
+    // ==========================================
+
+    private decimal CalculateResult(decimal leftOperand, decimal rightOperand, string mathOperator)
+    {
+        return mathOperator switch
+        {
+            "+" => leftOperand + rightOperand,
+            "-" => leftOperand - rightOperand,
+            "*" => leftOperand * rightOperand,
+            "/" when rightOperand == 0 => throw new DivideByZeroException(),
+            "/" => leftOperand / rightOperand,
+            _ => throw new InvalidOperationException("Toan tu khong hop le")
+        };
+    }
+
+    private decimal GetCurrentDisplayValue()
+    {
+        if (!decimal.TryParse(ResultTextBlock.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value))
+        {
+            throw new FormatException("Gia tri hien thi khong hop le");
+        }
+
+        return value;
+    }
+
+    private static string GetOperatorSymbol(string mathOperator)
+    {
+        return mathOperator switch
+        {
+            "/" => "÷",
+            "*" => "×",
+            _ => mathOperator
+        };
+    }
+
+    private static string FormatNumber(decimal number)
+    {
+        return number.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private bool IsDisplayError()
+    {
+        return !decimal.TryParse(ResultTextBlock.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
+    }
+
+    private void ShowError(string errorMessage)
+    {
+        ExpressionTextBlock.Text = string.Empty;
+        ResultTextBlock.Text = errorMessage;
+
+        _firstOperand = null;
+        _currentOperator = null;
+        _lastOperator = null;
+        _lastSecondOperand = null;
+
+        _isWaitingForNewInput = true;
+        _isShowingResult = true;
+    }
+}

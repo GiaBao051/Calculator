@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 
 namespace Calculator.Services;
@@ -193,7 +193,7 @@ public class CalculatorService
             {
                 "Reciprocal" => $"1/({Format(current)})",
                 "Square" => $"sqr({Format(current)})",
-                "Sqrt" => $"?({Format(current)})",
+                "Sqrt" => $"√({Format(current)})",
                 _ => string.Empty
             };
 
@@ -406,8 +406,8 @@ public class CalculatorService
     {
         return op switch
         {
-            "/" => "�",
-            "*" => "�",
+            "/" => "÷",
+            "*" => "×",
             _ => op
         };
     }

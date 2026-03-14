@@ -48,9 +48,10 @@
               "RelativeDocumentMoniker": "Calculator\\ViewModels\\CalculatorViewModel.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\ViewModels\\CalculatorViewModel.cs",
               "RelativeToolTip": "Calculator\\ViewModels\\CalculatorViewModel.cs",
-              "ViewState": "AgIAAHgAAAAAAAAAAAAYwI8AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAOQAAAAAAAAAAMBcwOkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-11T16:56:06.615Z"
+              "WhenOpened": "2026-03-11T16:56:06.615Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -60,9 +61,10 @@
               "RelativeDocumentMoniker": "Calculator\\Services\\CalculatorService.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\Services\\CalculatorService.cs",
               "RelativeToolTip": "Calculator\\Services\\CalculatorService.cs",
-              "ViewState": "AgIAANYAAAAAAAAAAAAuwFYAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAK0BAAAAAAAAAEBVwGsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-11T16:55:40.719Z"
+              "WhenOpened": "2026-03-11T16:55:40.719Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -96,7 +98,7 @@
               "RelativeDocumentMoniker": "Calculator\\MainWindow.xaml.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\MainWindow.xaml.cs",
               "RelativeToolTip": "Calculator\\MainWindow.xaml.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAG0BAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAcAAAAAAAAAAMBcwAwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-10T09:22:54.007Z",
               "EditorCaption": ""

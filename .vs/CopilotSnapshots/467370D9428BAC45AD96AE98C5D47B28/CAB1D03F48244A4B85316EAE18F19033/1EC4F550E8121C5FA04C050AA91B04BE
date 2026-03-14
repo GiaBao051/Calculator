@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -36,17 +36,6 @@ public class CalculatorViewModel : INotifyPropertyChanged
     {
         get => _expressionText;
         private set { _expressionText = value; OnPropertyChanged(); }
-    }
-
-    // Danh sach lich su phep tinh de hien thi ben panel History.
-    public ObservableCollection<string> HistoryItems { get; } = new();
-
-    // Co hieu cho biet da co gia tri Memory hay chua.
-    private bool _hasMemory;
-    public bool HasMemory
-    {
-        get => _hasMemory;
-        private set { _hasMemory = value; OnPropertyChanged(); }
     }
 
     // ==========================================

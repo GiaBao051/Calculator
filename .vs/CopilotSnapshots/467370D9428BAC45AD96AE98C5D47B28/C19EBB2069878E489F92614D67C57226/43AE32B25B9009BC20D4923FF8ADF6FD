@@ -1,14 +1,15 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Calculator.Commands;
-using Calculator.Models;
 using Calculator.Services;
 
 namespace Calculator.ViewModels;
 
 // Doi tuong CalculatorViewModel la tang trung gian de the hien du lieu cho UI.
 // Theo chuan MVVM: DataBinding giao tiep tu dong ma khong can Code-Behind biet cac dieu khien ben trong.
-public class CalculatorViewModel : BaseViewModel
+public class CalculatorViewModel : INotifyPropertyChanged
 {
     // ==========================================
     // 1. DICH VU (SERVICE)
@@ -26,7 +27,7 @@ public class CalculatorViewModel : BaseViewModel
     public string DisplayText
     {
         get => _displayText;
-        private set => SetProperty(ref _displayText, value);
+        private set { _displayText = value; OnPropertyChanged(); }
     }
 
     // Dong thong bao bieu thuc hien tai (Chu so nho o tren, bieu thuc '12 +').
@@ -34,18 +35,18 @@ public class CalculatorViewModel : BaseViewModel
     public string ExpressionText
     {
         get => _expressionText;
-        private set => SetProperty(ref _expressionText, value);
+        private set { _expressionText = value; OnPropertyChanged(); }
     }
 
     // Danh sach lich su phep tinh de hien thi ben panel History.
-    public ObservableCollection<HistoryItem> HistoryItems { get; } = new();
+    public ObservableCollection<string> HistoryItems { get; } = new();
 
     // Co hieu cho biet da co gia tri Memory hay chua.
     private bool _hasMemory;
     public bool HasMemory
     {
         get => _hasMemory;
-        private set => SetProperty(ref _hasMemory, value);
+        private set { _hasMemory = value; OnPropertyChanged(); }
     }
 
     // ==========================================
@@ -201,7 +202,7 @@ public class CalculatorViewModel : BaseViewModel
     }
 
     // ==========================================
-    // 5. CAP NHAT VA DONG BO (SYNCHRONIZATION)
+    // 5. CA CAP NHAT VA DONG BO (SYNCHRONIZATION)
     // ==========================================
 
     // Dong bo lai toan bo du lieu that tren UI theo xu ly cua Service.
@@ -214,25 +215,19 @@ public class CalculatorViewModel : BaseViewModel
         string? historyEntry = _service.PopHistoryEntry();
         if (!string.IsNullOrWhiteSpace(historyEntry))
         {
-            HistoryItems.Insert(0, CreateHistoryItem(historyEntry));
+            HistoryItems.Insert(0, historyEntry);
         }
     }
 
-    private static HistoryItem CreateHistoryItem(string rawHistory)
+    // ==========================================
+    // 6. TINH NANG THONG BAO THAY DOI EVENT PROPERTY
+    // ==========================================
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    // CallerMemberName tu dong nhan ten thuoc tinh thay doi.
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        string[] parts = rawHistory.Split("  ", System.StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length < 2)
-        {
-            return new HistoryItem { Expression = rawHistory };
-        }
-
-        string result = parts[^1];
-        string expression = rawHistory[..rawHistory.LastIndexOf(result, System.StringComparison.Ordinal)].TrimEnd();
-
-        return new HistoryItem
-        {
-            Expression = expression,
-            Result = result
-        };
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

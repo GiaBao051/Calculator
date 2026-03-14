@@ -25,6 +25,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|E:\\App\\Calculator\\README.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:README.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|e:\\app\\calculator\\calculator\\viewmodels\\baseviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|solutionrelative:calculator\\viewmodels\\baseviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|e:\\app\\calculator\\calculator\\models\\historyitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EF646B26-1CF1-40E0-86B3-9A977B68C45C}|Calculator\\Calculator.csproj|solutionrelative:calculator\\models\\historyitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,11 +42,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 8,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "HistoryItem.cs",
+              "DocumentMoniker": "E:\\App\\Calculator\\Calculator\\Models\\HistoryItem.cs",
+              "RelativeDocumentMoniker": "Calculator\\Models\\HistoryItem.cs",
+              "ToolTip": "E:\\App\\Calculator\\Calculator\\Models\\HistoryItem.cs",
+              "RelativeToolTip": "Calculator\\Models\\HistoryItem.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-14T17:16:28.217Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "BaseViewModel.cs",
+              "DocumentMoniker": "E:\\App\\Calculator\\Calculator\\ViewModels\\BaseViewModel.cs",
+              "RelativeDocumentMoniker": "Calculator\\ViewModels\\BaseViewModel.cs",
+              "ToolTip": "E:\\App\\Calculator\\Calculator\\ViewModels\\BaseViewModel.cs",
+              "RelativeToolTip": "Calculator\\ViewModels\\BaseViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-14T17:16:14.228Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -48,7 +82,7 @@
               "RelativeDocumentMoniker": "Calculator\\ViewModels\\CalculatorViewModel.cs",
               "ToolTip": "E:\\App\\Calculator\\Calculator\\ViewModels\\CalculatorViewModel.cs",
               "RelativeToolTip": "Calculator\\ViewModels\\CalculatorViewModel.cs",
-              "ViewState": "AgIAAOQAAAAAAAAAAMBcwOkAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAOkAAAAAAAAAAIBZwO4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-11T16:56:06.615Z",
               "EditorCaption": ""
@@ -63,8 +97,7 @@
               "RelativeToolTip": "Calculator\\Services\\CalculatorService.cs",
               "ViewState": "AgIAAK0BAAAAAAAAAEBVwGsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-11T16:55:40.719Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-11T16:55:40.719Z"
             },
             {
               "$type": "Document",
@@ -100,8 +133,7 @@
               "RelativeToolTip": "Calculator\\MainWindow.xaml.cs",
               "ViewState": "AgIAAAcAAAAAAAAAAMBcwAwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-10T09:22:54.007Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-10T09:22:54.007Z"
             },
             {
               "$type": "Document",

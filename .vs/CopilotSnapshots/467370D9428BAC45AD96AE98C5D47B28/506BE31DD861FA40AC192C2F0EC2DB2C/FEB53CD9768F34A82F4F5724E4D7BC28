@@ -2,40 +2,28 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace Calculator;
 
 // Lop MainWindow xu ly giao dien va dieu huong cac thao tac cua may tinh.
-// Phien ban nay da nang cap them: History, Memory, keyboard input va dau '=' lap lai.
+// Code duoc viet theo chuan Clean Code, phan chia tung nhom chuc nang ro rang.
 public partial class MainWindow : Window
 {
     // ==========================================
-    // 1. BIEN TRANG THAI CHINH CUA PHEP TINH
+    // 1. BIEN TRANG THAI (STATE VARIABLES)
     // ==========================================
-
-    // Toan hang thu nhat trong phep tinh 2 ngoi.
+    
+    // Luu gia tri cua toan hang thu nhat trong phep tinh gom 2 so (VD: '12' trong '12 + 3').
     private decimal? _firstOperand;
 
-    // Toan tu hien tai (+, -, *, /).
+    // Luu toan tu hien tai dang cho xu ly (+, -, *, /).
     private string? _currentOperator;
 
-    // Danh dau dang cho nguoi dung nhap so moi.
+    // Co hieu xac dinh viec nguoi dung dang nhap so moi hay dang nhap tiep so hien tai.
     private bool _isWaitingForNewInput = true;
 
-    // Danh dau man hinh dang hien thi ket qua.
+    // Co hieu xac dinh man hinh dang hien thi ket qua cua phep tinh truoc do.
     private bool _isShowingResult;
-
-    // Luu thong tin de ho tro bam '=' lap lai.
-    private decimal? _lastSecondOperand;
-    private string? _lastOperator;
-
-    // ==========================================
-    // 2. BIEN CHUC NANG MEMORY
-    // ==========================================
-
-    private decimal _memoryValue;
-    private bool _hasMemory;
 
     public MainWindow()
     {
@@ -44,9 +32,11 @@ public partial class MainWindow : Window
     }
 
     // ==========================================
-    // 3. BO DIEU HUONG SU KIEN NUT BAM
+    // 2. BO DIEU HUONG SU KIEN CHINH (EVENT ROUTER)
     // ==========================================
 
+    // Tat ca cac nut bam tren giao dien deu goi den ham nay.
+    // Thong qua thuoc tinh 'Tag' cua Button de xac dinh nut nao duoc bam.
     private void OnCalculatorButtonClick(object sender, RoutedEventArgs e)
     {
         if (sender is not Button button || button.Tag is not string action)
@@ -54,18 +44,14 @@ public partial class MainWindow : Window
             return;
         }
 
-        HandleAction(action);
-    }
-
-    private void HandleAction(string action)
-    {
-        // Neu la phim so thi xu ly ngay.
+        // Kiem tra neu phim bam la ky tu so tu 0 den 9
         if (action.Length == 1 && char.IsDigit(action[0]))
         {
             AppendNumber(action);
             return;
         }
 
+        // Phan loai va goi ham nang cao tuong ung hoac phep toan
         switch (action)
         {
             case ".":
@@ -100,81 +86,14 @@ public partial class MainWindow : Window
             case "Sqrt":
                 ApplyUnaryOperation(action);
                 break;
-            case "MemoryClear":
-                MemoryClear();
-                break;
-            case "MemoryRecall":
-                MemoryRecall();
-                break;
-            case "MemoryStore":
-                MemoryStore();
-                break;
-            case "MemoryAdd":
-                MemoryAdd();
-                break;
-            case "MemorySubtract":
-                MemorySubtract();
-                break;
-            case "ClearHistory":
-                ClearHistory();
-                break;
         }
     }
 
     // ==========================================
-    // 4. KEYBOARD INPUT
+    // 3. NHOM CHUC NANG NHAP LIEU (INPUT HANDLING)
     // ==========================================
 
-    private void OnWindowPreviewKeyDown(object sender, KeyEventArgs e)
-    {
-        string? action = e.Key switch
-        {
-            Key.D0 or Key.NumPad0 => "0",
-            Key.D1 or Key.NumPad1 => "1",
-            Key.D2 or Key.NumPad2 => "2",
-            Key.D3 or Key.NumPad3 => "3",
-            Key.D4 or Key.NumPad4 => "4",
-            Key.D5 or Key.NumPad5 => "5",
-            Key.D6 or Key.NumPad6 => "6",
-            Key.D7 or Key.NumPad7 => "7",
-            Key.D8 or Key.NumPad8 => "8",
-            Key.D9 or Key.NumPad9 => "9",
-            Key.Decimal or Key.OemPeriod => ".",
-            Key.Add => "+",
-            Key.Subtract => "-",
-            Key.Multiply => "*",
-            Key.Divide => "/",
-            Key.Enter or Key.Return => "=",
-            Key.Back => "Backspace",
-            Key.Escape => "C",
-            _ => null
-        };
-
-        // Ho tro phim '+' tren hang so khi bam Shift + '='
-        if (action is null && e.Key == Key.OemPlus && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
-        {
-            action = "+";
-        }
-
-        // Ho tro phim '-' tren hang so
-        if (action is null && e.Key == Key.OemMinus)
-        {
-            action = "-";
-        }
-
-        if (action is null)
-        {
-            return;
-        }
-
-        HandleAction(action);
-        e.Handled = true;
-    }
-
-    // ==========================================
-    // 5. NHOM NHAP LIEU
-    // ==========================================
-
+    // Xu ly khi bam phim so. Them so vao man hinh.
     private void AppendNumber(string numberText)
     {
         if (IsDisplayError())
@@ -182,28 +101,28 @@ public partial class MainWindow : Window
             ResetCalculator();
         }
 
-        // Neu vua bam '=' va khong co toan tu moi, bat dau phep tinh moi.
+        // Neu vua bam '=' va chua chon toan tu moi, nhap so se bat dau phep tinh moi.
         if (_isShowingResult && _currentOperator is null)
         {
             ExpressionTextBlock.Text = string.Empty;
             _firstOperand = null;
-            _lastOperator = null;
-            _lastSecondOperand = null;
             _isShowingResult = false;
         }
 
+        // Thay the so 0 mac dinh hoac luu de gia tri neu dang cho nhap moi.
         if (_isWaitingForNewInput || ResultTextBlock.Text == "0")
         {
             ResultTextBlock.Text = numberText;
         }
         else
         {
-            ResultTextBlock.Text += numberText;
+            ResultTextBlock.Text += numberText; // Noi chuoi so
         }
 
         _isWaitingForNewInput = false;
     }
 
+    // Xu ly khi bam dau cham (.). Dam bao chi co 1 dau cham trong 1 so.
     private void AppendDecimalPoint()
     {
         if (IsDisplayError())
@@ -226,9 +145,10 @@ public partial class MainWindow : Window
     }
 
     // ==========================================
-    // 6. NHOM PHEP TOAN 2 NGOI
+    // 4. NHOM CHUC NANG PHEP TOAN (OPERATIONS)
     // ==========================================
 
+    // Xu ly khi bam cac phep toan 2 ngoi (+, -, *, /)
     private void SetOperator(string selectedOperator)
     {
         if (IsDisplayError())
@@ -241,7 +161,7 @@ public partial class MainWindow : Window
         {
             decimal currentValue = GetCurrentDisplayValue();
 
-            // Tinh chuoi lien tiep: 2 + 3 + -> se ra 5 va cho nhap tiep.
+            // Ho tro tinh toan chuoi lien tiep (VD: 2 + 3 + )
             if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
             {
                 decimal chainedResult = CalculateResult(_firstOperand.Value, currentValue, _currentOperator);
@@ -256,6 +176,8 @@ public partial class MainWindow : Window
             _currentOperator = selectedOperator;
             _isWaitingForNewInput = true;
             _isShowingResult = false;
+            
+            // Hien thi bieu thuc dang tinh
             ExpressionTextBlock.Text = $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(selectedOperator)}";
         }
         catch (DivideByZeroException)
@@ -268,57 +190,29 @@ public partial class MainWindow : Window
         }
     }
 
+    // Xu ly khi bam phim bang (=)
     private void CalculateAndShowResult()
     {
-        if (IsDisplayError())
+        if (_firstOperand is null || _currentOperator is null || _isWaitingForNewInput || IsDisplayError())
         {
             return;
         }
 
+        decimal secondOperand = GetCurrentDisplayValue();
+
         try
         {
-            // Case 1: bam '=' lan dau sau khi nhap day du phep tinh.
-            if (_firstOperand.HasValue && _currentOperator is not null && !_isWaitingForNewInput)
-            {
-                decimal secondOperand = GetCurrentDisplayValue();
-                decimal result = CalculateResult(_firstOperand.Value, secondOperand, _currentOperator);
+            decimal result = CalculateResult(_firstOperand.Value, secondOperand, _currentOperator);
+            
+            // Hien thi toan bo bieu thuc hoan chinh tren man hinh phu
+            ExpressionTextBlock.Text =
+                $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(_currentOperator)} {FormatNumber(secondOperand)} =";
 
-                string expression =
-                    $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(_currentOperator)} {FormatNumber(secondOperand)} =";
-                
-                ExpressionTextBlock.Text = expression;
-                ResultTextBlock.Text = FormatNumber(result);
-
-                // Luu lai de ho tro bam '=' lap lai.
-                _lastOperator = _currentOperator;
-                _lastSecondOperand = secondOperand;
-
-                _firstOperand = result;
-                _currentOperator = null;
-                _isWaitingForNewInput = true;
-                _isShowingResult = true;
-
-                AddHistoryEntry(expression, result);
-                return;
-            }
-
-            // Case 2: bam '=' lap lai (VD: 2 + 3 = = =).
-            if (_firstOperand.HasValue && _currentOperator is null && _lastOperator is not null && _lastSecondOperand.HasValue)
-            {
-                decimal repeatedResult = CalculateResult(_firstOperand.Value, _lastSecondOperand.Value, _lastOperator);
-
-                string expression =
-                    $"{FormatNumber(_firstOperand.Value)} {GetOperatorSymbol(_lastOperator)} {FormatNumber(_lastSecondOperand.Value)} =";
-                
-                ExpressionTextBlock.Text = expression;
-                ResultTextBlock.Text = FormatNumber(repeatedResult);
-
-                _firstOperand = repeatedResult;
-                _isWaitingForNewInput = true;
-                _isShowingResult = true;
-
-                AddHistoryEntry(expression, repeatedResult);
-            }
+            ResultTextBlock.Text = FormatNumber(result);
+            _firstOperand = result;
+            _currentOperator = null;
+            _isWaitingForNewInput = true;
+            _isShowingResult = true;
         }
         catch (DivideByZeroException)
         {
@@ -330,10 +224,7 @@ public partial class MainWindow : Window
         }
     }
 
-    // ==========================================
-    // 7. NHOM PHEP TOAN 1 NGOI
-    // ==========================================
-
+    // Xu ly cac phep toan 1 ngoi (1/x, x^2, can bac 2)
     private void ApplyUnaryOperation(string operation)
     {
         if (IsDisplayError())
@@ -356,7 +247,7 @@ public partial class MainWindow : Window
                 _ => currentValue
             };
 
-            string expression = operation switch
+            ExpressionTextBlock.Text = operation switch
             {
                 "Reciprocal" => $"1/({FormatNumber(currentValue)})",
                 "Square" => $"sqr({FormatNumber(currentValue)})",
@@ -364,18 +255,9 @@ public partial class MainWindow : Window
                 _ => string.Empty
             };
 
-            ExpressionTextBlock.Text = expression;
             ResultTextBlock.Text = FormatNumber(result);
-
-            _firstOperand = result;
-            _currentOperator = null;
             _isWaitingForNewInput = true;
             _isShowingResult = true;
-
-            if (!string.IsNullOrWhiteSpace(expression))
-            {
-                AddHistoryEntry($"{expression} =", result);
-            }
         }
         catch (DivideByZeroException)
         {
@@ -391,6 +273,7 @@ public partial class MainWindow : Window
         }
     }
 
+    // Xu ly chuc nang phan tram (%)
     private void ApplyPercent()
     {
         if (IsDisplayError())
@@ -401,6 +284,7 @@ public partial class MainWindow : Window
 
         decimal currentValue = GetCurrentDisplayValue();
 
+        // Tinh phan tram dua tren ngu canh co toan hang truoc do hay khong
         decimal percentValue = _firstOperand.HasValue && _currentOperator is not null
             ? _firstOperand.Value * currentValue / 100m
             : currentValue / 100m;
@@ -417,71 +301,14 @@ public partial class MainWindow : Window
     }
 
     // ==========================================
-    // 8. NHOM MEMORY
+    // 5. NHOM CHUC NANG QUAN LY TRANG THAI GIAO DIEN (SYSTEM/UTILITIES)
     // ==========================================
 
-    private void MemoryClear()
-    {
-        _memoryValue = 0;
-        _hasMemory = false;
-    }
-
-    private void MemoryRecall()
-    {
-        if (!_hasMemory)
-        {
-            return;
-        }
-
-        ResultTextBlock.Text = FormatNumber(_memoryValue);
-        _isWaitingForNewInput = false;
-        _isShowingResult = false;
-    }
-
-    private void MemoryStore()
-    {
-        if (IsDisplayError())
-        {
-            return;
-        }
-
-        _memoryValue = GetCurrentDisplayValue();
-        _hasMemory = true;
-    }
-
-    private void MemoryAdd()
-    {
-        if (IsDisplayError())
-        {
-            return;
-        }
-
-        _memoryValue += GetCurrentDisplayValue();
-        _hasMemory = true;
-    }
-
-    private void MemorySubtract()
-    {
-        if (IsDisplayError())
-        {
-            return;
-        }
-
-        _memoryValue -= GetCurrentDisplayValue();
-        _hasMemory = true;
-    }
-
-    // ==========================================
-    // 9. NHOM DIEU KHIEN TRANG THAI
-    // ==========================================
-
+    // Khoi tao lai toan bo may tinh (C - Clear)
     private void ResetCalculator()
     {
         _firstOperand = null;
         _currentOperator = null;
-        _lastOperator = null;
-        _lastSecondOperand = null;
-
         _isWaitingForNewInput = true;
         _isShowingResult = false;
 
@@ -489,6 +316,7 @@ public partial class MainWindow : Window
         ResultTextBlock.Text = "0";
     }
 
+    // Xoa gia tri dang nhap hien tai ma khong xoa toan hang da luu (CE - Clear Entry)
     private void ClearEntry()
     {
         if (IsDisplayError())
@@ -502,6 +330,7 @@ public partial class MainWindow : Window
         _isShowingResult = false;
     }
 
+    // Xoa 1 ky tu tung buoc mot (Backspace)
     private void HandleBackspace()
     {
         if (_isWaitingForNewInput || IsDisplayError())
@@ -518,6 +347,7 @@ public partial class MainWindow : Window
 
         ResultTextBlock.Text = ResultTextBlock.Text[..^1];
 
+        // Xu ly dac biet neu con lai duy nhat dau tru (-) hoac rong
         if (ResultTextBlock.Text == "-" || ResultTextBlock.Text.Length == 0)
         {
             ResultTextBlock.Text = "0";
@@ -525,6 +355,7 @@ public partial class MainWindow : Window
         }
     }
 
+    // Chuyen doi qua lai giua so am va so duong (+/-)
     private void ToggleSign()
     {
         if (IsDisplayError())
@@ -545,24 +376,10 @@ public partial class MainWindow : Window
     }
 
     // ==========================================
-    // 10. NHOM HISTORY
+    // 6. NHOM HAM HO TRO (HELPERS)
     // ==========================================
 
-    private void AddHistoryEntry(string expression, decimal result)
-    {
-        string text = $"{expression}  {FormatNumber(result)}";
-        HistoryListBox.Items.Insert(0, text);
-    }
-
-    private void ClearHistory()
-    {
-        HistoryListBox.Items.Clear();
-    }
-
-    // ==========================================
-    // 11. HAM HO TRO
-    // ==========================================
-
+    // Thuc hien tinh toan cho phep toan 2 ngoi. Tach logic khoi UI.
     private decimal CalculateResult(decimal leftOperand, decimal rightOperand, string mathOperator)
     {
         return mathOperator switch
@@ -576,6 +393,7 @@ public partial class MainWindow : Window
         };
     }
 
+    // Parse kieu decimal tu man hinh, su dung Cuture de on dinh dau cham '.'.
     private decimal GetCurrentDisplayValue()
     {
         if (!decimal.TryParse(ResultTextBlock.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value))
@@ -586,6 +404,7 @@ public partial class MainWindow : Window
         return value;
     }
 
+    // Quy doi bieu tuong cua phep toan sang dang de nhin hon (*) -> (x).
     private static string GetOperatorSymbol(string mathOperator)
     {
         return mathOperator switch
@@ -596,16 +415,19 @@ public partial class MainWindow : Window
         };
     }
 
+    // Dong nhat viec format string khi xuat ra UI
     private static string FormatNumber(decimal number)
     {
         return number.ToString(CultureInfo.InvariantCulture);
     }
 
+    // Kiem tra thu tren man hinh hien tai dang xuat hien chu bao loi hay khong
     private bool IsDisplayError()
     {
         return !decimal.TryParse(ResultTextBlock.Text, NumberStyles.Number, CultureInfo.InvariantCulture, out _);
     }
 
+    // Hien thi loi va bao ve trang thai cua ung dung khoi bi crash
     private void ShowError(string errorMessage)
     {
         ExpressionTextBlock.Text = string.Empty;
@@ -613,9 +435,6 @@ public partial class MainWindow : Window
 
         _firstOperand = null;
         _currentOperator = null;
-        _lastOperator = null;
-        _lastSecondOperand = null;
-
         _isWaitingForNewInput = true;
         _isShowingResult = true;
     }
